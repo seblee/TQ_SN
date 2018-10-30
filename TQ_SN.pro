@@ -5,6 +5,9 @@
 #-------------------------------------------------
 
 QT       += core gui widgets
+QT += serialport
+QT += gui
+QT += serialbus
 
 TARGET = TQ_SN
 TEMPLATE = app
@@ -32,7 +35,12 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
+RC_ICONS = bitbug_favicon.ico
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    Rec.qrc
