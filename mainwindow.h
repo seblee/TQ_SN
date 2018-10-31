@@ -1,38 +1,47 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QtSerialPort>
-#include <QSerialPortInfo>
 #include <QKeyEvent>
-
+#include <QMainWindow>
+#include <QModbusClient>
+#include <QSerialPortInfo>
+#include <QtSerialPort>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected slots:
+  protected slots:
     void Read_Data();
 
-private slots:
+  private slots:
     void handleError(QSerialPort::SerialPortError error);
 
     void on_pushButton_2_clicked();
 
     void on_connectButton_clicked();
 
-private:
+    void onStateChanged(int states);
+
+    void on_readButton_clicked();
+
+    void readReady();
+
+    void on_writeButton_clicked();
+
+  private:
     Ui::MainWindow *ui;
 
     QSerialPort *serial;
+
+    QModbusClient *modbusDevice;
 
     void keyPressEvent(QKeyEvent *event);
 };

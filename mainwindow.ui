@@ -239,7 +239,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QLineEdit" name="lineEdit">
+          <widget class="QLineEdit" name="lineEdit_writeDeviceName">
            <property name="minimumSize">
             <size>
              <width>165</width>
@@ -255,7 +255,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_2">
+          <widget class="QLineEdit" name="lineEdit_writeProductKey">
            <property name="font">
             <font>
              <family>Arial</family>
@@ -265,7 +265,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_3">
+          <widget class="QLineEdit" name="lineEdit_writeDeviceSecret">
            <property name="font">
             <font>
              <family>Arial</family>
@@ -275,7 +275,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_4">
+          <widget class="QLineEdit" name="lineEdit_writeClientID">
            <property name="font">
             <font>
              <family>Arial</family>
@@ -372,7 +372,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <widget class="QLineEdit" name="lineEdit_9">
+        <widget class="QLineEdit" name="lineEdit_readFlag">
          <property name="minimumSize">
           <size>
            <width>165</width>
@@ -400,7 +400,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_8">
+        <widget class="QLineEdit" name="lineEdit_readDeviceName">
          <property name="minimumSize">
           <size>
            <width>165</width>
@@ -428,7 +428,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_7">
+        <widget class="QLineEdit" name="lineEdit_readProductKey">
          <property name="minimumSize">
           <size>
            <width>165</width>
@@ -453,7 +453,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_10">
+        <widget class="QLineEdit" name="lineEdit_readDeviceSecret">
          <property name="minimumSize">
           <size>
            <width>165</width>
@@ -478,7 +478,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_6">
+        <widget class="QLineEdit" name="lineEdit_readClientID">
          <property name="minimumSize">
           <size>
            <width>165</width>
@@ -505,6 +505,44 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
       </layout>
      </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="writeButton">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>90</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Write</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="readButton">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>180</y>
+      <width>80</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Read</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
