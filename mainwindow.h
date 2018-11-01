@@ -5,11 +5,15 @@
 #include <QMainWindow>
 #include <QModbusClient>
 #include <QSerialPortInfo>
+#include <QTimer>
 #include <QtSerialPort>
 
 namespace Ui {
 class MainWindow;
 }
+
+#define CHANAL_SERIAL
+//#define CHANAL_MODBUS
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -19,8 +23,11 @@ class MainWindow : public QMainWindow {
     ~MainWindow();
 
   protected slots:
+#ifdef CHANAL_SERIAL
     void Read_Data();
-
+#elif defined CHANAL_MODBUS
+    void readReady();
+#endif
   private slots:
     void handleError(QSerialPort::SerialPortError error);
 
@@ -32,20 +39,23 @@ class MainWindow : public QMainWindow {
 
     void on_readButton_clicked();
 
-    void readReady();
-
     void on_writeButton_clicked();
 
     void on_requestButton_clicked();
 
+    void time_up();
+
   private:
     Ui::MainWindow *ui;
-
+    QTimer *timer;
+#ifdef CHANAL_SERIAL
     QSerialPort *serial;
-
+    QByteArray buf;
+#elif defined CHANAL_MODBUS
     QModbusClient *modbusDevice;
-
-    void keyPressEvent(QKeyEvent *event);
+#endif
+    void
+        keyPressEvent(QKeyEvent *event);
 };
 
 #endif // MAINWINDOW_H

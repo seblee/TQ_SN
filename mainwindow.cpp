@@ -13,11 +13,18 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , serial(nullptr)
+    , timer(nullptr)
+#ifdef CHANAL_SERIAL
+    , serial(nullptr) {
+#elif defined CHANAL_MODBUS
     , modbusDevice(nullptr) {
+#endif
+
     serial = new QSerialPort;
     ui->setupUi(this);
-
+#ifdef CHANAL_SERIAL
+    serial = new QSerialPort(this);
+#elif defined CHANAL_MODBUS
     modbusDevice = new QModbusRtuSerialMaster(this);
     connect(modbusDevice, &QModbusClient::errorOccurred,
         [this](QModbusDevice::Error) {
@@ -31,12 +38,23 @@ MainWindow::MainWindow(QWidget *parent)
         connect(modbusDevice, &QModbusClient::stateChanged, this,
             &MainWindow::onStateChanged);
     }
+#endif
+    timer = new QTimer(this);
+    if (timer)
+        connect(timer, SIGNAL(timeout()), this, SLOT(time_up()));
 }
 
 MainWindow::~MainWindow() {
+#ifdef CHANAL_SERIAL
+    if (serial) {
+        serial->clear();
+        serial->close();
+    }
+#elif defined CHANAL_MODBUS
     if (modbusDevice)
         if (modbusDevice->state() == QModbusDevice::ConnectedState)
             modbusDevice->disconnectDevice();
+#endif
     delete ui;
 }
 
@@ -70,9 +88,16 @@ void MainWindow::onStateChanged(int state) {
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
+#ifdef CHANAL_SERIAL
+        if (serial) {
+            serial->clear();
+            serial->close();
+        }
+#elif defined CHANAL_MODBUS
         if (modbusDevice)
             if (modbusDevice->state() == QModbusDevice::ConnectedState)
                 modbusDevice->disconnectDevice();
+#endif
         this->close();
     }
 }
@@ -84,109 +109,13 @@ void MainWindow::on_pushButton_2_clicked() {
             com_info.description());
     }
 }
-
+#ifdef CHANAL_SERIAL
 void MainWindow::Read_Data() {
-    static QByteArray buf;
 
     buf += serial->readAll();
-    if (!buf.isEmpty()) {
-        buf.clear();
-    }
+    timer->start(10);
 }
-
-void MainWindow::on_connectButton_clicked() {
-    //    QString str = ui->Serial_item->currentText();
-    //    if (!serial)
-    //        return;
-    //    statusBar()->clearMessage();
-    //    if(serial->openMode() != QIODevice::ReadWrite)
-    //    {
-    //        if( str.length() == 0){
-    //            ui->statusBar->showMessage("Serial is empty",3000);
-    //            return;
-    //        }
-    //        connect(serial, static_cast<void
-    //        (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
-    //        this, &MainWindow::handleError);
-    //        //连接槽，串口出现问题连接到错误处理函数
-    //        serial->setPortName(str.section("  ",0,0));
-    //        if (serial->open(QIODevice::ReadWrite) == true)
-    //        {
-    //            serial->setBaudRate(QSerialPort::Baud19200);
-    //            serial->setDataBits(QSerialPort::Data8);
-    //            serial->setParity(QSerialPort::NoParity);
-    //            serial->setStopBits(QSerialPort::OneStop);
-    //            QObject::connect(serial, &QSerialPort::readyRead, this,
-    //            &MainWindow::Read_Data);
-
-    //            qDebug() << "open serial" << serial->portName() << "done";
-    //            ui->connectButton->setText(tr("Disconnect"));
-    //            ui->CheckBox_SerialStatus->setCheckState(Qt::Checked);
-    //        }
-    //       statusBar()->showMessage(str.section("  ",0,0) + tr(" Connected"));
-    //    }
-    //    else
-    //    {
-    //        serial->clearError();
-    //        serial->clear();
-    //        serial->close();
-    //        ui->connectButton->setText(tr("Connect"));
-    //        ui->CheckBox_SerialStatus->setCheckState(Qt::Unchecked);
-    //        statusBar()->showMessage(tr("Serial ") + tr("Disconnected"));
-    //    }
-
-    QString str = ui->Serial_item->currentText();
-    if (!modbusDevice)
-        return;
-    statusBar()->clearMessage();
-    if (modbusDevice->state() != QModbusDevice::ConnectedState) {
-        if (str.length() == 0) {
-            ui->statusBar->showMessage("Serial is empty", 3000);
-            return;
-        }
-        modbusDevice->setConnectionParameter(QModbusDevice::SerialPortNameParameter,
-            str.section("  ", 0, 0));
-        modbusDevice->setConnectionParameter(QModbusDevice::SerialParityParameter,
-            QSerialPort::NoParity);
-        modbusDevice->setConnectionParameter(QModbusDevice::SerialBaudRateParameter,
-            QSerialPort::Baud19200);
-        modbusDevice->setConnectionParameter(QModbusDevice::SerialDataBitsParameter,
-            QSerialPort::Data8);
-        modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter,
-            QSerialPort::OneStop);
-        modbusDevice->setTimeout(1000);
-        modbusDevice->setNumberOfRetries(0);
-        if (!modbusDevice->connectDevice()) {
-            statusBar()->showMessage(tr("Connect failed: ") +
-                modbusDevice->errorString());
-        } else {
-            statusBar()->showMessage(tr("Connect sucess"));
-            modbusDevice->setParent(serial);
-            serial->bytesAvailable();
-        }
-    } else {
-        modbusDevice->disconnectDevice();
-    }
-}
-
-void MainWindow::on_readButton_clicked() {
-    if (!modbusDevice)
-        return;
-    if (modbusDevice->state() != QModbusDevice::ConnectedState)
-        return;
-    statusBar()->clearMessage();
-    QModbusDataUnit readUnit(QModbusDataUnit::HoldingRegisters, 264, 100);
-    if (QModbusReply *reply = modbusDevice->sendReadRequest(readUnit, 1)) {
-        if (!reply->isFinished()) {
-            connect(reply, &QModbusReply::finished, this, &MainWindow::readReady);
-        } else {
-            delete reply;
-        }
-    } else {
-        statusBar()->showMessage(tr("Read error:") + modbusDevice->errorString());
-    }
-}
-
+#elif defined CHANAL_MODBUS
 void MainWindow::readReady() {
     QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
 
@@ -236,7 +165,115 @@ void MainWindow::readReady() {
     reply->deleteLater();
 }
 
+#endif
+
+void MainWindow::on_connectButton_clicked() {
+#ifdef CHANAL_SERIAL
+    QString str = ui->Serial_item->currentText();
+    if (!serial)
+        return;
+    statusBar()->clearMessage();
+    if (serial->openMode() != QIODevice::ReadWrite) {
+        if (str.length() == 0) {
+            ui->statusBar->showMessage("Serial is empty", 3000);
+            return;
+        }
+        connect(serial, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
+            this, &MainWindow::handleError);
+        //连接槽，串口出现问题连接到错误处理函数
+        serial->setPortName(str.section("  ", 0, 0));
+        if (serial->open(QIODevice::ReadWrite) == true) {
+            serial->setBaudRate(QSerialPort::Baud19200);
+            serial->setDataBits(QSerialPort::Data8);
+            serial->setParity(QSerialPort::NoParity);
+            serial->setStopBits(QSerialPort::OneStop);
+            QObject::connect(serial, &QSerialPort::readyRead, this,
+                &MainWindow::Read_Data);
+
+            qDebug() << "open serial" << serial->portName() << "done";
+            ui->connectButton->setText(tr("Disconnect"));
+            ui->CheckBox_SerialStatus->setCheckState(Qt::Checked);
+        }
+        statusBar()->showMessage(str.section("  ", 0, 0) + tr(" Connected"));
+    } else {
+        serial->clearError();
+        serial->clear();
+        serial->close();
+        ui->connectButton->setText(tr("Connect"));
+        ui->CheckBox_SerialStatus->setCheckState(Qt::Unchecked);
+        statusBar()->showMessage(tr("Serial ") + tr("Disconnected"));
+    }
+#elif defined CHANAL_MODBUS
+
+    QString str = ui->Serial_item->currentText();
+    if (!modbusDevice)
+        return;
+    statusBar()->clearMessage();
+    if (modbusDevice->state() != QModbusDevice::ConnectedState) {
+        if (str.length() == 0) {
+            ui->statusBar->showMessage("Serial is empty", 3000);
+            return;
+        }
+        modbusDevice->setConnectionParameter(QModbusDevice::SerialPortNameParameter,
+            str.section("  ", 0, 0));
+        modbusDevice->setConnectionParameter(QModbusDevice::SerialParityParameter,
+            QSerialPort::NoParity);
+        modbusDevice->setConnectionParameter(QModbusDevice::SerialBaudRateParameter,
+            QSerialPort::Baud19200);
+        modbusDevice->setConnectionParameter(QModbusDevice::SerialDataBitsParameter,
+            QSerialPort::Data8);
+        modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter,
+            QSerialPort::OneStop);
+        modbusDevice->setTimeout(1000);
+        modbusDevice->setNumberOfRetries(0);
+        if (!modbusDevice->connectDevice()) {
+            statusBar()->showMessage(tr("Connect failed: ") +
+                modbusDevice->errorString());
+        } else {
+            statusBar()->showMessage(tr("Connect sucess"));
+            modbusDevice->setParent(serial);
+            serial->bytesAvailable();
+        }
+    } else {
+        modbusDevice->disconnectDevice();
+    }
+#endif
+}
+
+void MainWindow::on_readButton_clicked() {
+#ifdef CHANAL_SERIAL
+
+    QByteArray sendbuf;
+    sendbuf.insert(0, 0x01);
+    sendbuf.insert(0, 0x03);
+    sendbuf.insert(0, static_cast<char>(264 >> 8));
+    sendbuf.insert(0, 0x01);
+
+#elif defined CHANAL_MODBUS
+
+    if (!modbusDevice)
+        return;
+    if (modbusDevice->state() != QModbusDevice::ConnectedState)
+        return;
+    statusBar()->clearMessage();
+    QModbusDataUnit readUnit(QModbusDataUnit::HoldingRegisters, 264, 100);
+    if (QModbusReply *reply = modbusDevice->sendReadRequest(readUnit, 1)) {
+        if (!reply->isFinished()) {
+            connect(reply, &QModbusReply::finished, this, &MainWindow::readReady);
+        } else {
+            delete reply;
+        }
+    } else {
+        statusBar()->showMessage(tr("Read error:") + modbusDevice->errorString());
+    }
+#endif
+}
+
 void MainWindow::on_writeButton_clicked() {
+
+#ifdef CHANAL_SERIAL
+
+#elif defined CHANAL_MODBUS
     if (!modbusDevice)
         return;
     statusBar()->clearMessage(); //清除状态栏显示的信息
@@ -283,9 +320,13 @@ void MainWindow::on_writeButton_clicked() {
     } else {
         statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
     }
+#endif
 }
 
 void MainWindow::on_requestButton_clicked() {
+#ifdef CHANAL_SERIAL
+
+#elif defined CHANAL_MODBUS
     if (!modbusDevice)
         return;
     statusBar()->clearMessage(); //清除状态栏显示的信息
@@ -321,4 +362,12 @@ void MainWindow::on_requestButton_clicked() {
     } else {
         statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
     }
+#endif
+}
+
+void MainWindow::time_up() {
+    if (buf.isEmpty())
+        return;
+
+    buf.clear();
 }
