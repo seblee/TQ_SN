@@ -36,6 +36,8 @@ class MainWindow : public QMainWindow {
 
     void on_writeButton_clicked();
 
+    void on_requestButton_clicked();
+
   private:
     Ui::MainWindow *ui;
 

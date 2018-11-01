@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QModbusDataUnit>
 #include <QModbusReply>
+#include <QModbusRequest>
 #include <QModbusRtuSerialMaster>
 #include <QSerialPort>
 #include <QSerialPortInfo>
@@ -154,12 +155,14 @@ void MainWindow::on_connectButton_clicked() {
         modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter,
             QSerialPort::OneStop);
         modbusDevice->setTimeout(1000);
-        modbusDevice->setNumberOfRetries(3);
+        modbusDevice->setNumberOfRetries(0);
         if (!modbusDevice->connectDevice()) {
             statusBar()->showMessage(tr("Connect failed: ") +
                 modbusDevice->errorString());
         } else {
             statusBar()->showMessage(tr("Connect sucess"));
+            modbusDevice->setParent(serial);
+            serial->bytesAvailable();
         }
     } else {
         modbusDevice->disconnectDevice();
@@ -246,43 +249,76 @@ void MainWindow::on_writeButton_clicked() {
 
     QModbusDataUnit writeunit(QModbusDataUnit::HoldingRegisters, 264, 100);
     QString strDis = write_data.GetArray().toHex().data();
-
+    qDebug() << strDis;
+    qDebug() << QString::number(static_cast<int>(writeunit.valueCount()), 10);
     for (int i = 0; i < static_cast<int>(writeunit.valueCount()); i++) {
-        int j = 2 * i;
+        int j = 4 * i;
         if (j >= strDis.length())
             continue;
-        QString st = strDis.mid(j, 2);
+        QString st = strDis.mid(j, 4);
         bool ok;
-        int hex = st.toInt(&ok, 16); //将textedit中读取到的数据转换为16进制发送
-        qDebug() << hex;
+        int hex = st.toInt(&ok, 16);                      //将textedit中读取到的数据转换为16进制发送
         writeunit.setValue(i, static_cast<quint16>(hex)); //设置发送数据
     }
-    QByteArray data;
-    for (uint i = 0; i < writeunit.valueCount(); i++) {
-        data.insert(static_cast<int>(i * 2),
-            static_cast<char>(writeunit.value(static_cast<int>(i)) >> 8));
-        data.insert(static_cast<int>(i * 2 + 1),
-            static_cast<char>(writeunit.value(static_cast<int>(i)) & 0x00ff));
-    }
 
-    //    if (auto *reply = modbusDevice->sendWriteRequest(writeUnit, 1)) { // 1是server address   sendWriteRequest是向服务器写数据
-    //        if (!reply->isFinished()) {                                   //reply Returns true when the reply has finished or was aborted.
-    //            connect(reply, &QModbusReply::finished, this, [this, reply]() {
-    //                if (reply->error() == QModbusDevice::ProtocolError) {
-    //                    statusBar()->showMessage(tr("Write response error: %1 (Mobus exception: 0x%2)")
-    //                                                 .arg(reply->errorString())
-    //                                                 .arg(reply->rawResult().exceptionCode(), -1, 16),
-    //                        5000);
-    //                } else if (reply->error() != QModbusDevice::NoError) {
-    //                    statusBar()->showMessage(tr("Write response error: %1 (code: 0x%2)").arg(reply->errorString()).arg(reply->error(), -1, 16), 5000);
-    //                }
-    //                reply->deleteLater();
-    //            });
-    //        } else {
-    //            // broadcast replies return immediately
-    //            reply->deleteLater();
-    //        }
-    //    } else {
-    //        statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
-    //    }
+    if (QModbusReply *reply = modbusDevice->sendWriteRequest(writeunit, 1)) {
+        if (!reply->isFinished()) {
+            connect(reply, &QModbusReply::finished, this, [this, reply]() {
+                if (reply->error() == QModbusDevice::ProtocolError) {
+                    statusBar()->showMessage(tr("write resposne error:%1(Modbus exception:0x%02)")
+                                                 .arg(reply->errorString())
+                                                 .arg(reply->rawResult().exceptionCode(), -1, 16),
+                        5000);
+                } else if (reply->error() != QModbusDevice::NoError) {
+                    statusBar()->showMessage(tr("write response error:%1(code:0x%2)")
+                                                 .arg(reply->errorString())
+                                                 .arg(reply->error(), -1, 16),
+                        5000);
+                }
+                reply->deleteLater();
+            });
+        } else {
+            reply->deleteLater();
+        }
+    } else {
+        statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
+    }
+}
+
+void MainWindow::on_requestButton_clicked() {
+    if (!modbusDevice)
+        return;
+    statusBar()->clearMessage(); //清除状态栏显示的信息
+    Parse_Data write_data;
+    write_data.Parse_insert_flag(tr("0x0505"));
+    write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
+    write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
+    write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
+    write_data.Parse_insert_clientID(ui->lineEdit_writeClientID->text());
+    //      QString strDis = write_data.GetArray().toHex().data();
+
+    QModbusRequest writeRequest(QModbusPdu::WriteMultipleRegisters, write_data.GetArray());
+
+    if (QModbusReply *reply = modbusDevice->sendRawRequest(writeRequest, 1)) {
+        if (!reply->isFinished()) {
+            connect(reply, &QModbusReply::finished, this, [this, reply]() {
+                if (reply->error() == QModbusDevice::ProtocolError) {
+                    statusBar()->showMessage(tr("write resposne error:%1(Modbus exception:0x%02)")
+                                                 .arg(reply->errorString())
+                                                 .arg(reply->rawResult().exceptionCode(), -1, 16),
+                        5000);
+                } else if (reply->error() != QModbusDevice::NoError) {
+                    statusBar()->showMessage(tr("write response error:%1(code:0x%2)")
+                                                 .arg(reply->errorString())
+                                                 .arg(reply->error(), -1, 16),
+                        5000);
+                }
+                reply->deleteLater();
+            });
+        } else {
+            reply->deleteLater();
+        }
+    } else {
+        statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
+    }
 }

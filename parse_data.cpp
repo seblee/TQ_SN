@@ -22,8 +22,8 @@ void Parse_Data::Parse_insert_flag(QString flag) {
 
 void Parse_Data::Parse_insert_clientID(QString clientID) {
     QByteArray idArray = clientID.toLocal8Bit();
-    uint len = clientID.length() > DEVICE_NAME_LEN
-        ? DEVICE_NAME_LEN
+    uint len = clientID.length() > DEVICE_ID_LEN
+        ? DEVICE_ID_LEN
         : static_cast<uint>(clientID.length());
     strncpy(info.device_id, idArray.data(), len);
     qDebug() << QString::fromLocal8Bit(info.device_id,
@@ -61,7 +61,7 @@ void Parse_Data::Parse_insert_deviceSecret(QString secret) {
 
 QByteArray Parse_Data::GetArray() {
     QByteArray buff;
-    buff.resize(static_cast<int>(sizeof(iotx_device_info_t)));
+    buff.resize(200 /*static_cast<int>(sizeof(iotx_device_info_t))*/);
     memcpy(buff.data(), &info, sizeof(iotx_device_info_t));
     return buff;
 }
