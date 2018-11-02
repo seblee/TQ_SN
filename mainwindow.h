@@ -45,17 +45,29 @@ class MainWindow : public QMainWindow {
 
     void time_up();
 
+    void on_checkBox_ScanSwith_stateChanged(int arg1);
+
+    void key_time_out();
+
   private:
     Ui::MainWindow *ui;
+
     QTimer *timer;
+
 #ifdef CHANAL_SERIAL
     QSerialPort *serial;
-    QByteArray buf;
+
+    QByteArray ReceiveBuf;
+
 #elif defined CHANAL_MODBUS
     QModbusClient *modbusDevice;
+
 #endif
-    void
-        keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+
+    QTimer *K_timer;
+
+    QString currKey;
 };
 
 #endif // MAINWINDOW_H

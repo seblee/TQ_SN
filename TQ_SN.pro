@@ -28,11 +28,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    parse_data.cpp
+    parse_data.cpp \
+    jqchecksum.cpp
 
 HEADERS += \
         mainwindow.h \
-    parse_data.h
+    parse_data.h \
+    jqchecksum.h
 
 FORMS += \
         mainwindow.ui

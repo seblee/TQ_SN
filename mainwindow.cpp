@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "jqchecksum.h"
 #include "parse_data.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
@@ -15,12 +16,13 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , timer(nullptr)
 #ifdef CHANAL_SERIAL
-    , serial(nullptr) {
+    , serial(nullptr)
 #elif defined CHANAL_MODBUS
-    , modbusDevice(nullptr) {
+    , modbusDevice(nullptr)
 #endif
+    , K_timer(nullptr) {
+    //    serial = new QSerialPort;
 
-    serial = new QSerialPort;
     ui->setupUi(this);
 #ifdef CHANAL_SERIAL
     serial = new QSerialPort(this);
@@ -42,6 +44,13 @@ MainWindow::MainWindow(QWidget *parent)
     timer = new QTimer(this);
     if (timer)
         connect(timer, SIGNAL(timeout()), this, SLOT(time_up()));
+
+    K_timer = new QTimer(this);
+    if (K_timer) {
+        K_timer->setInterval(10);
+        K_timer->setSingleShot(true);
+        connect(K_timer, SIGNAL(timeout()), this, SLOT(key_time_out()));
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -99,6 +108,27 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 modbusDevice->disconnectDevice();
 #endif
         this->close();
+    } else {
+        if ((event->isAutoRepeat()) ||
+            (ui->checkBox_ScanSwith->checkState() == Qt::Unchecked))
+            return;
+        if (K_timer->isActive()) { //scan code event
+            if (event->key() == Qt::Key_Return) {
+                ui->label_WriteState->setText(ui->lineEdit_writeDeviceName->text());
+                ui->lineEdit_writeDeviceName->clear();
+                qDebug() << tr("enter");
+                currKey.clear();
+                K_timer->stop();
+                return;
+
+            } else {
+                ui->lineEdit_writeDeviceName->setText(
+                    ui->lineEdit_writeDeviceName->text() + event->text());
+                qDebug() << event->text();
+            }
+        }
+        currKey = event->text();
+        K_timer->start();
     }
 }
 void MainWindow::on_pushButton_2_clicked() {
@@ -108,12 +138,22 @@ void MainWindow::on_pushButton_2_clicked() {
         ui->Serial_item->addItem(com_info.portName() + QWidget::tr("   ") +
             com_info.description());
     }
+    foreach (const QSerialPortInfo &com_info, QSerialPortInfo::availablePorts()) {
+        qDebug() << com_info.portName() << com_info.description();
+        ui->Serial_item->addItem(com_info.portName() + QWidget::tr("   ") +
+            com_info.description());
+    }
 }
 #ifdef CHANAL_SERIAL
 void MainWindow::Read_Data() {
+    //   timer->stop();
+    ReceiveBuf += serial->readAll();
 
-    buf += serial->readAll();
-    timer->start(10);
+    if (!ReceiveBuf.isEmpty())
+        qDebug() << tr("get data:") << ReceiveBuf.toHex();
+
+    timer->start(250);
+    //  connect(timer, SIGNAL(timeout()), this, SLOT(time_up()));
 }
 #elif defined CHANAL_MODBUS
 void MainWindow::readReady() {
@@ -242,12 +282,27 @@ void MainWindow::on_connectButton_clicked() {
 
 void MainWindow::on_readButton_clicked() {
 #ifdef CHANAL_SERIAL
+    if (!serial)
+        return;
+    if (serial->openMode() != QIODevice::ReadWrite)
+        return;
 
-    QByteArray sendbuf;
-    sendbuf.insert(0, 0x01);
-    sendbuf.insert(0, 0x03);
-    sendbuf.insert(0, static_cast<char>(264 >> 8));
-    sendbuf.insert(0, 0x01);
+    QByteArray ReadCmd("");
+    ReadCmd.insert(ReadCmd.size(), 0x01);
+    ReadCmd.insert(ReadCmd.size(), 0x03);
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(264 >> 8));
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(264 & 0x00ff));
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(100 >> 8));
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(100 & 0x00ff));
+
+    auto crc16ForModbus = JQChecksum::crc16ForModbus(ReadCmd);
+    qDebug() << "crc16ForModbus:" << crc16ForModbus << QString::number(crc16ForModbus, 16);
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(crc16ForModbus & 0xff));
+    ReadCmd.insert(ReadCmd.size(), static_cast<char>(crc16ForModbus >> 8));
+
+    serial->write(ReadCmd);
+    timer->start(1000);
+    ReceiveBuf.clear();
 
 #elif defined CHANAL_MODBUS
 
@@ -272,6 +327,41 @@ void MainWindow::on_readButton_clicked() {
 void MainWindow::on_writeButton_clicked() {
 
 #ifdef CHANAL_SERIAL
+    if (!serial)
+        return;
+    if (serial->openMode() != QIODevice::ReadWrite)
+        return;
+    Parse_Data write_data;
+    write_data.Parse_insert_flag(tr("0x0505"));
+    write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
+    write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
+    write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
+    write_data.Parse_insert_clientID(ui->lineEdit_writeClientID->text());
+    QByteArray WriteCmd("");
+    WriteCmd.insert(WriteCmd.size(), 0x01);
+    WriteCmd.insert(WriteCmd.size(), 0x10);
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(264 >> 8));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(264 & 0x00ff));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 >> 8));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 & 0x00ff));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 * 2));
+    WriteCmd.append(write_data.GetArray());
+
+    auto crc16ForModbus = JQChecksum::crc16ForModbus(WriteCmd);
+    qDebug() << "crc16ForModbus:" << crc16ForModbus << QString::number(crc16ForModbus, 16);
+    WriteCmd.insert(WriteCmd.length(), static_cast<char>(crc16ForModbus & 0xff));
+    WriteCmd.insert(WriteCmd.length(), static_cast<char>(crc16ForModbus >> 8));
+    QString stri(WriteCmd.toHex().toUpper());
+    int len = stri.length() / 2;
+    qDebug() << tr("QString count:") << QString::number(len, 10);
+    for (int i = 1; i < len; i++) {
+        stri.insert(2 * i + i - 1, " ");
+    }
+    qDebug() << stri;
+
+    serial->write(WriteCmd);
+    timer->start(1000);
+    ReceiveBuf.clear();
 
 #elif defined CHANAL_MODBUS
     if (!modbusDevice)
@@ -366,8 +456,80 @@ void MainWindow::on_requestButton_clicked() {
 }
 
 void MainWindow::time_up() {
-    if (buf.isEmpty())
+    if (ReceiveBuf.isEmpty())
         return;
+    if (JQChecksum::crc16ForModbus(ReceiveBuf) != 0) {
+        statusBar()->showMessage(tr("checksum error"));
+        return;
+    }
 
-    buf.clear();
+    if (ReceiveBuf.at(0) != 1)
+        goto exit;
+
+    switch (ReceiveBuf.at(1)) {
+        case QModbusPdu::ReadHoldingRegisters: //0x10
+        {
+            qDebug() << tr("data count:") << QString::number(ReceiveBuf.at(2), 10);
+            QByteArray data = ReceiveBuf.mid(3, static_cast<uchar>(ReceiveBuf.at(2)));
+            QString stri(data.toHex().toUpper());
+            int len = stri.length() / 2;
+            qDebug() << tr("QString count:") << QString::number(len, 10);
+            for (int i = 1; i < len; i++) {
+                stri.insert(2 * i + i - 1, " ");
+            }
+            qDebug() << stri;
+
+            Parse_Data P_data;
+            P_data.Parse_Read(data);
+            QByteArray array_temp;
+
+            int flag = P_data.info.flag;
+            qDebug() << flag;
+            ui->lineEdit_readFlag->setText(QString::number(P_data.info.flag, 16));
+            ui->lineEdit_readDeviceName->setText(QString::fromLocal8Bit(
+                P_data.info.device_name, static_cast<int>(strlen(P_data.info.device_name))));
+            ui->lineEdit_readProductKey->setText(QString::fromLocal8Bit(
+                P_data.info.product_key, static_cast<int>(strlen(P_data.info.product_key))));
+            ui->lineEdit_readDeviceSecret->setText(QString::fromLocal8Bit(
+                P_data.info.device_secret, static_cast<int>(strlen(P_data.info.device_secret))));
+            ui->lineEdit_readClientID->setText(QString::fromLocal8Bit(
+                P_data.info.device_id, static_cast<int>(strlen(P_data.info.device_id))));
+            statusBar()->showMessage(tr("read sucess"));
+            break;
+        }
+
+        case QModbusPdu::WriteMultipleRegisters: {
+            statusBar()->showMessage(tr("write sucess"));
+            break;
+        }
+        default:
+            statusBar()->showMessage(tr("function code error"));
+            break;
+    }
+exit:
+    timer->stop();
+    ReceiveBuf.clear();
+}
+
+void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
+    if (arg1 == Qt::Checked) {
+        ui->lineEdit_writeDeviceName->setReadOnly(true);
+        ui->lineEdit_writeProductKey->setReadOnly(true);
+        ui->lineEdit_writeDeviceSecret->setReadOnly(true);
+        ui->lineEdit_writeClientID->setReadOnly(true);
+        ui->lineEdit_writeDeviceName->clear();
+        ui->lineEdit_writeProductKey->clear();
+        ui->lineEdit_writeDeviceSecret->clear();
+        ui->lineEdit_writeClientID->clear();
+    } else {
+        ui->lineEdit_writeDeviceName->setReadOnly(false);
+        ui->lineEdit_writeProductKey->setReadOnly(false);
+        ui->lineEdit_writeDeviceSecret->setReadOnly(false);
+        ui->lineEdit_writeClientID->setReadOnly(false);
+    }
+}
+
+void MainWindow::key_time_out() {
+    qDebug() << currKey;
+    ui->lineEdit_writeDeviceName->clear();
 }
