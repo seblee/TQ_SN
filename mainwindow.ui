@@ -180,8 +180,13 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
           <property name="font">
            <font>
             <family>Source Code Pro</family>
-            <pointsize>12</pointsize>
+            <pointsize>14</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
            </font>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
           </property>
           <property name="text">
            <string>AWG-XXXX-XXXXXX-XXXXXX</string>
@@ -289,9 +294,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLabel" name="label">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="text">
                <string>DeviceName</string>
@@ -302,9 +310,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLabel" name="label_2">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="text">
                <string>ProductKey</string>
@@ -315,9 +326,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLabel" name="label_3">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="text">
                <string>DeviceSecret</string>
@@ -328,9 +342,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLabel" name="label_4">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="text">
                <string>ClientID</string>
@@ -351,7 +368,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
               </property>
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
               </property>
@@ -367,7 +384,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLineEdit" name="lineEdit_writeProductKey">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
               </property>
@@ -399,7 +416,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <widget class="QLineEdit" name="lineEdit_writeClientID">
               <property name="font">
                <font>
-                <family>Arial</family>
+                <family>Source Code Pro</family>
                 <pointsize>14</pointsize>
                </font>
               </property>
@@ -488,9 +505,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            <widget class="QLabel" name="label_13">
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>WriteFlag</string>
@@ -501,9 +521,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            <widget class="QLabel" name="label_11">
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>DeviceName</string>
@@ -514,9 +537,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            <widget class="QLabel" name="label_9">
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>ProductKey</string>
@@ -527,9 +553,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            <widget class="QLabel" name="label_10">
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>DeviceSecret</string>
@@ -540,9 +569,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            <widget class="QLabel" name="label_12">
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>ClientID</string>
@@ -569,7 +601,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             </property>
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
             </property>
@@ -601,7 +633,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             <property name="font">
              <font>
               <family>Source Code Pro</family>
-              <pointsize>12</pointsize>
+              <pointsize>14</pointsize>
               <weight>50</weight>
               <bold>false</bold>
              </font>
@@ -633,7 +665,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             </property>
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
             </property>
@@ -661,7 +693,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             </property>
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
             </property>
@@ -689,7 +721,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             </property>
             <property name="font">
              <font>
-              <family>Arial</family>
+              <family>Source Code Pro</family>
               <pointsize>14</pointsize>
              </font>
             </property>
