@@ -41,13 +41,13 @@ class MainWindow : public QMainWindow {
 
     void on_writeButton_clicked();
 
-    void on_requestButton_clicked();
-
     void time_up();
 
     void on_checkBox_ScanSwith_stateChanged(int arg1);
 
     void key_time_out();
+
+    void on_pushButton_clicked();
 
   private:
     Ui::MainWindow *ui;

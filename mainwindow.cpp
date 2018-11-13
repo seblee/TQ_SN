@@ -21,8 +21,6 @@ MainWindow::MainWindow(QWidget *parent)
     , modbusDevice(nullptr)
 #endif
     , K_timer(nullptr) {
-    //    serial = new QSerialPort;
-
     ui->setupUi(this);
 #ifdef CHANAL_SERIAL
     serial = new QSerialPort(this);
@@ -73,16 +71,20 @@ void MainWindow::handleError(QSerialPort::SerialPortError error) {
         return;
     if (error == QSerialPort::ResourceError) {
         QMessageBox::critical(this, tr("Critical Error"), serial->errorString());
-        serial->clear();
         serial->close();
         ui->connectButton->setText(tr("Connect"));
         ui->CheckBox_SerialStatus->setCheckState(Qt::Unchecked);
     } else if (error == QSerialPort::PermissionError) {
         QMessageBox::critical(
             this, tr("Critical Error"),
-            tr("\r\nThe serial has been already opened\r\nPlease Check"));
-        serial->clear();
+            tr("\r\nThe device is not connect\r\nPlease Check"));
         serial->close();
+        ui->connectButton->setText(tr("Connect"));
+        ui->CheckBox_SerialStatus->setCheckState(Qt::Unchecked);
+    } else if (error == QSerialPort::NotOpenError) {
+        QMessageBox::critical(
+            this, tr("NotOpenError Error"),
+            tr("\r\nThe serial is net opened\r\nPlease Check"));
         ui->connectButton->setText(tr("Connect"));
         ui->CheckBox_SerialStatus->setCheckState(Qt::Unchecked);
     }
@@ -99,8 +101,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
 #ifdef CHANAL_SERIAL
         if (serial) {
-            serial->clear();
-            serial->close();
+            if (serial->openMode() == QIODevice::ReadWrite) {
+                serial->clear();
+                serial->close();
+            }
         }
 #elif defined CHANAL_MODBUS
         if (modbusDevice)
@@ -114,17 +118,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             return;
         if (K_timer->isActive()) { //scan code event
             if (event->key() == Qt::Key_Return) {
+                ui->lineEdit_writeDeviceName->setText(
+                    ui->lineEdit_writeDeviceName->text() + currKey);
+                qDebug() << currKey;
                 ui->label_WriteState->setText(ui->lineEdit_writeDeviceName->text());
                 ui->lineEdit_writeDeviceName->clear();
                 qDebug() << tr("enter");
+                on_writeButton_clicked();
                 currKey.clear();
                 K_timer->stop();
                 return;
 
             } else {
                 ui->lineEdit_writeDeviceName->setText(
-                    ui->lineEdit_writeDeviceName->text() + event->text());
-                qDebug() << event->text();
+                    ui->lineEdit_writeDeviceName->text() + currKey);
+                qDebug() << currKey;
             }
         }
         currKey = event->text();
@@ -133,11 +141,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 void MainWindow::on_pushButton_2_clicked() {
     ui->Serial_item->clear();
-    foreach (const QSerialPortInfo &com_info, QSerialPortInfo::availablePorts()) {
-        qDebug() << com_info.portName() << com_info.description();
-        ui->Serial_item->addItem(com_info.portName() + QWidget::tr("   ") +
-            com_info.description());
-    }
     foreach (const QSerialPortInfo &com_info, QSerialPortInfo::availablePorts()) {
         qDebug() << com_info.portName() << com_info.description();
         ui->Serial_item->addItem(com_info.portName() + QWidget::tr("   ") +
@@ -332,11 +335,28 @@ void MainWindow::on_writeButton_clicked() {
     if (serial->openMode() != QIODevice::ReadWrite)
         return;
     Parse_Data write_data;
-    write_data.Parse_insert_flag(tr("0x0505"));
-    write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
-    write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
-    write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
-    write_data.Parse_insert_clientID(ui->lineEdit_writeClientID->text());
+    if (ui->checkBox_ScanSwith->checkState() == Qt::Checked) {
+        QString checkStr;
+        checkStr = ui->comboBox_AirWater->currentText() + tr("-") +
+            ui->comboBox_Model->currentText() + tr("-");
+        qDebug()
+            << checkStr;
+        qDebug()
+            << tr("x.lastIndexOf(y):")
+            << QString::number(ui->label_WriteState->text().lastIndexOf(checkStr), 10);
+        if (ui->label_WriteState->text().lastIndexOf(checkStr) != 0) {
+            return;
+        }
+        write_data.Parse_insert_flag(QString::number(REGISTER_FLAG, 16) /* tr("0x0505")*/);
+
+        write_data.Parse_insert_deviceName(ui->label_WriteState->text());
+    } else {
+        write_data.Parse_insert_flag(QString::number(REGISTER_FLAG, 16) /* tr("0x0505")*/);
+        write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
+        write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
+        write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
+        write_data.Parse_insert_clientID(ui->lineEdit_writeClientID->text());
+    }
     QByteArray WriteCmd("");
     WriteCmd.insert(WriteCmd.size(), 0x01);
     WriteCmd.insert(WriteCmd.size(), 0x10);
@@ -368,7 +388,7 @@ void MainWindow::on_writeButton_clicked() {
         return;
     statusBar()->clearMessage(); //清除状态栏显示的信息
     Parse_Data write_data;
-    write_data.Parse_insert_flag(tr("0x0505"));
+    write_data.Parse_insert_flag(QString::number(REGISTER_FLAG, 16) /* tr("0x0505")*/);
     write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
     write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
     write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
@@ -413,54 +433,12 @@ void MainWindow::on_writeButton_clicked() {
 #endif
 }
 
-void MainWindow::on_requestButton_clicked() {
-#ifdef CHANAL_SERIAL
-
-#elif defined CHANAL_MODBUS
-    if (!modbusDevice)
-        return;
-    statusBar()->clearMessage(); //清除状态栏显示的信息
-    Parse_Data write_data;
-    write_data.Parse_insert_flag(tr("0x0505"));
-    write_data.Parse_insert_deviceName(ui->lineEdit_writeDeviceName->text());
-    write_data.Parse_insert_productKey(ui->lineEdit_writeProductKey->text());
-    write_data.Parse_insert_deviceSecret(ui->lineEdit_writeDeviceSecret->text());
-    write_data.Parse_insert_clientID(ui->lineEdit_writeClientID->text());
-    //      QString strDis = write_data.GetArray().toHex().data();
-
-    QModbusRequest writeRequest(QModbusPdu::WriteMultipleRegisters, write_data.GetArray());
-
-    if (QModbusReply *reply = modbusDevice->sendRawRequest(writeRequest, 1)) {
-        if (!reply->isFinished()) {
-            connect(reply, &QModbusReply::finished, this, [this, reply]() {
-                if (reply->error() == QModbusDevice::ProtocolError) {
-                    statusBar()->showMessage(tr("write resposne error:%1(Modbus exception:0x%02)")
-                                                 .arg(reply->errorString())
-                                                 .arg(reply->rawResult().exceptionCode(), -1, 16),
-                        5000);
-                } else if (reply->error() != QModbusDevice::NoError) {
-                    statusBar()->showMessage(tr("write response error:%1(code:0x%2)")
-                                                 .arg(reply->errorString())
-                                                 .arg(reply->error(), -1, 16),
-                        5000);
-                }
-                reply->deleteLater();
-            });
-        } else {
-            reply->deleteLater();
-        }
-    } else {
-        statusBar()->showMessage(tr("Write error: ") + modbusDevice->errorString(), 5000);
-    }
-#endif
-}
-
 void MainWindow::time_up() {
     if (ReceiveBuf.isEmpty())
         return;
     if (JQChecksum::crc16ForModbus(ReceiveBuf) != 0) {
         statusBar()->showMessage(tr("checksum error"));
-        return;
+        goto exit;
     }
 
     if (ReceiveBuf.at(0) != 1)
@@ -481,11 +459,8 @@ void MainWindow::time_up() {
 
             Parse_Data P_data;
             P_data.Parse_Read(data);
-            QByteArray array_temp;
 
-            int flag = P_data.info.flag;
-            qDebug() << flag;
-            ui->lineEdit_readFlag->setText(QString::number(P_data.info.flag, 16));
+            ui->lineEdit_readFlag->setText(QString::number(P_data.info.flag, 16).toUpper());
             ui->lineEdit_readDeviceName->setText(QString::fromLocal8Bit(
                 P_data.info.device_name, static_cast<int>(strlen(P_data.info.device_name))));
             ui->lineEdit_readProductKey->setText(QString::fromLocal8Bit(
@@ -521,15 +496,36 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
         ui->lineEdit_writeProductKey->clear();
         ui->lineEdit_writeDeviceSecret->clear();
         ui->lineEdit_writeClientID->clear();
+        ui->comboBox_AirWater->setEnabled(false);
+        ui->comboBox_Model->setEnabled(false);
+        ui->readButton->setEnabled(false);
+        ui->writeButton->setEnabled(false);
     } else {
         ui->lineEdit_writeDeviceName->setReadOnly(false);
         ui->lineEdit_writeProductKey->setReadOnly(false);
         ui->lineEdit_writeDeviceSecret->setReadOnly(false);
         ui->lineEdit_writeClientID->setReadOnly(false);
+        ui->comboBox_AirWater->setEnabled(true);
+        ui->comboBox_Model->setEnabled(true);
+        ui->readButton->setEnabled(true);
+        ui->writeButton->setEnabled(true);
     }
 }
 
 void MainWindow::key_time_out() {
     qDebug() << currKey;
     ui->lineEdit_writeDeviceName->clear();
+}
+
+void MainWindow::on_pushButton_clicked() {
+    QString x = "crazy azimuths";
+    QString y = "az";
+    x.lastIndexOf(y); // returns 6
+                      //    x.lastIndexOf(y, 6);        // returns 6
+                      //    x.lastIndexOf(y, 5);        // returns 2
+                      //    x.lastIndexOf(y, 1);        // returns -1
+    qDebug() << tr("x.lastIndexOf(y):") << QString::number(x.lastIndexOf(y), 10);
+    qDebug() << tr("x.lastIndexOf(y, 5):") << QString::number(x.lastIndexOf(y, 5), 10);
+    qDebug() << tr("x.lastIndexOf(y, 6):") << QString::number(x.lastIndexOf(y, 6), 10);
+    qDebug() << tr("x.lastIndexOf(y, 1):") << QString::number(x.lastIndexOf(y, 1), 10);
 }

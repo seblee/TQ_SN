@@ -7,6 +7,7 @@
 #define DEVICE_NAME_LEN (32)
 #define DEVICE_ID_LEN (64)
 #define DEVICE_SECRET_LEN (64)
+#define REGISTER_FLAG (0xA5A5)
 
 typedef struct {
     quint16 flag;
