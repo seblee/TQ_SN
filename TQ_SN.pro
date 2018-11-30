@@ -29,15 +29,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     parse_data.cpp \
-    jqchecksum.cpp
+    jqchecksum.cpp \
+    settingdialog.cpp
 
 HEADERS += \
         mainwindow.h \
     parse_data.h \
-    jqchecksum.h
+    jqchecksum.h \
+    settingdialog.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    settingdialog.ui
 
 RC_ICONS = bitbug_favicon.ico
 

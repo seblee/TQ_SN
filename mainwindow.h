@@ -11,9 +11,7 @@
 namespace Ui {
 class MainWindow;
 }
-
-#define CHANAL_SERIAL
-//#define CHANAL_MODBUS
+class settingDialog;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -23,15 +21,11 @@ class MainWindow : public QMainWindow {
     ~MainWindow();
 
   protected slots:
-#ifdef CHANAL_SERIAL
+
     void Read_Data();
-#elif defined CHANAL_MODBUS
-    void readReady();
-#endif
+
   private slots:
     void handleError(QSerialPort::SerialPortError error);
-
-    void on_pushButton_2_clicked();
 
     void on_connectButton_clicked();
 
@@ -49,25 +43,28 @@ class MainWindow : public QMainWindow {
 
     void on_pushButton_clicked();
 
+    void on_actionOptions_triggered();
+
+    void on_actionConnect_triggered();
+
+    void on_actionDisconnect_triggered();
+
   private:
     Ui::MainWindow *ui;
 
     QTimer *timer;
 
-#ifdef CHANAL_SERIAL
     QSerialPort *serial;
 
     QByteArray ReceiveBuf;
 
-#elif defined CHANAL_MODBUS
-    QModbusClient *modbusDevice;
-
-#endif
     void keyPressEvent(QKeyEvent *event);
 
     QTimer *K_timer;
 
     QString currKey;
+
+    settingDialog *m_settingsDialog;
 };
 
 #endif // MAINWINDOW_H
