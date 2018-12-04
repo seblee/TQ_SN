@@ -8,6 +8,7 @@ QT       += core gui widgets
 QT += serialport
 QT += gui
 QT += serialbus
+QT += axcontainer
 
 TARGET = TQ_SN
 TEMPLATE = app
@@ -30,13 +31,17 @@ SOURCES += \
         mainwindow.cpp \
     parse_data.cpp \
     jqchecksum.cpp \
-    settingdialog.cpp
+    settingdialog.cpp \
+    excelmanger.cpp \
+    authregist.cpp
 
 HEADERS += \
         mainwindow.h \
     parse_data.h \
     jqchecksum.h \
-    settingdialog.h
+    settingdialog.h \
+    excelmanger.h \
+    authregist.h
 
 FORMS += \
         mainwindow.ui \

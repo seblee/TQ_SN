@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>242</width>
-    <height>223</height>
+    <width>261</width>
+    <height>274</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,12 @@
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QPushButton" name="pushButton_refresh">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>刷新</string>
         </property>
@@ -29,6 +35,12 @@
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="applyButton">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>连接</string>
         </property>
@@ -36,8 +48,14 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Port</string>
+         <string>串口号</string>
         </property>
        </widget>
       </item>
@@ -55,17 +73,32 @@
           <pointsize>12</pointsize>
          </font>
         </property>
+        <property name="currentIndex">
+         <number>-1</number>
+        </property>
        </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_6">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Parity:</string>
+         <string>校验选择</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
        <widget class="QComboBox" name="parityCombo">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <item>
          <property name="text">
           <string>No</string>
@@ -95,13 +128,25 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_7">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Baud Rate:</string>
+         <string>波特率</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
        <widget class="QComboBox" name="baudCombo">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>4</number>
         </property>
@@ -149,15 +194,27 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_8">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Data Bits:</string>
+         <string>数据位</string>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
        <widget class="QComboBox" name="dataBitsCombo">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <item>
          <property name="text">
@@ -188,13 +245,25 @@
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_9">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Stop Bits:</string>
+         <string>停止位</string>
         </property>
        </widget>
       </item>
       <item row="5" column="1">
        <widget class="QComboBox" name="stopBitsCombo">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <item>
          <property name="text">
           <string>1</string>

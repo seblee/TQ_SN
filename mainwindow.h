@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "excelmanger.h"
 #include <QKeyEvent>
 #include <QMainWindow>
 #include <QModbusClient>
@@ -65,6 +66,8 @@ class MainWindow : public QMainWindow {
     QString currKey;
 
     settingDialog *m_settingsDialog;
+
+    ExcelManger *excel;
 };
 
 #endif // MAINWINDOW_H

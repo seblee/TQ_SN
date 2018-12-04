@@ -20,6 +20,12 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -30,8 +36,8 @@
        <widget class="QCheckBox" name="checkBox_ScanSwith">
         <property name="geometry">
          <rect>
-          <x>120</x>
-          <y>100</y>
+          <x>310</x>
+          <y>40</y>
           <width>151</width>
           <height>30</height>
          </rect>
@@ -63,76 +69,20 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
          <string>开始扫码输入</string>
         </property>
        </widget>
-       <widget class="QWidget" name="layoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>150</y>
-          <width>331</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="label_8">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>Arial</family>
-             <pointsize>16</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>扫码值:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_WriteState">
-           <property name="font">
-            <font>
-             <family>Source Code Pro</family>
-             <pointsize>14</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="focusPolicy">
-            <enum>Qt::StrongFocus</enum>
-           </property>
-           <property name="text">
-            <string>AWG-XXXX-XXXXXX-XXXXXX</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
        <widget class="QGroupBox" name="groupBox">
         <property name="geometry">
          <rect>
           <x>90</x>
           <y>10</y>
-          <width>191</width>
-          <height>71</height>
+          <width>188</width>
+          <height>77</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>12</pointsize>
+         </font>
         </property>
         <property name="title">
          <string>设备型号</string>
@@ -178,6 +128,45 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
          </item>
         </layout>
        </widget>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="geometry">
+         <rect>
+          <x>90</x>
+          <y>120</y>
+          <width>266</width>
+          <height>65</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="title">
+         <string>扫码结果</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_WriteState">
+           <property name="font">
+            <font>
+             <family>Source Code Pro</family>
+             <pointsize>14</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::StrongFocus</enum>
+           </property>
+           <property name="text">
+            <string>AWG-XXXX-XXXXXX-XXXXXX</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
@@ -217,7 +206,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
               </font>
              </property>
              <property name="text">
-              <string>写入显示</string>
+              <string>写入</string>
              </property>
             </widget>
            </item>
@@ -417,7 +406,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
               </font>
              </property>
              <property name="text">
-              <string>读取显示</string>
+              <string>读取</string>
              </property>
             </widget>
            </item>
@@ -739,6 +728,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
    <addaction name="actionConnect"/>
    <addaction name="separator"/>
    <addaction name="actionDisconnect"/>
+   <addaction name="separator"/>
    <addaction name="actiontest"/>
   </widget>
   <action name="actionOptions">

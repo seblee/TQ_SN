@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "authregist.h"
 #include "jqchecksum.h"
 #include "parse_data.h"
 #include "settingdialog.h"
@@ -17,7 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , timer(nullptr)
     , serial(nullptr)
-    , K_timer(nullptr) {
+    , K_timer(nullptr)
+    , excel(nullptr) {
     ui->setupUi(this);
 
     timer = new QTimer(this);
@@ -38,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(serial, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
         this, &MainWindow::handleError);
     ui->checkBox_ScanSwith->setEnabled(false);
+    excel = new ExcelManger(this);
+    auto auth = new AuthRegist(tr("age"));
 }
 
 MainWindow::~MainWindow() {
@@ -318,7 +322,6 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
         ui->lineEdit_writeProductKey->clear();
         ui->lineEdit_writeDeviceSecret->clear();
         ui->lineEdit_writeClientID->clear();
-        ui->comboBox_AirWater->setEnabled(false);
         ui->comboBox_Model->setEnabled(false);
         ui->readButton->setEnabled(false);
         ui->writeButton->setEnabled(false);
@@ -331,7 +334,6 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
         ui->lineEdit_writeProductKey->setReadOnly(false);
         ui->lineEdit_writeDeviceSecret->setReadOnly(false);
         ui->lineEdit_writeClientID->setReadOnly(false);
-        ui->comboBox_AirWater->setEnabled(true);
         ui->comboBox_Model->setEnabled(true);
         ui->readButton->setEnabled(true);
         ui->writeButton->setEnabled(true);
@@ -348,16 +350,12 @@ void MainWindow::key_time_out() {
 }
 
 void MainWindow::on_pushButton_clicked() {
-    QString x = "crazy azimuths";
-    QString y = "az";
-    x.lastIndexOf(y); // returns 6
-                      //    x.lastIndexOf(y, 6);        // returns 6
-                      //    x.lastIndexOf(y, 5);        // returns 2
-                      //    x.lastIndexOf(y, 1);        // returns -1
-    qDebug() << tr("x.lastIndexOf(y):") << QString::number(x.lastIndexOf(y), 10);
-    qDebug() << tr("x.lastIndexOf(y, 5):") << QString::number(x.lastIndexOf(y, 5), 10);
-    qDebug() << tr("x.lastIndexOf(y, 6):") << QString::number(x.lastIndexOf(y, 6), 10);
-    qDebug() << tr("x.lastIndexOf(y, 1):") << QString::number(x.lastIndexOf(y, 1), 10);
+
+    if (excel->input_check(ui->lineEdit_writeDeviceName->text()) == 0) {
+        qDebug() << ui->lineEdit_writeDeviceName->text() << tr("already written");
+        return;
+    }
+    excel->input_sid(ui->lineEdit_writeDeviceName->text());
 }
 
 void MainWindow::on_actionOptions_triggered() {
@@ -366,9 +364,15 @@ void MainWindow::on_actionOptions_triggered() {
 }
 
 void MainWindow::on_actionConnect_triggered() {
-    on_connectButton_clicked();
+    if (serial->openMode() != QIODevice::ReadWrite) {
+        on_connectButton_clicked();
+    }
+    return;
 }
 
 void MainWindow::on_actionDisconnect_triggered() {
+    if (serial->openMode() != QIODevice::ReadWrite) {
+        return;
+    }
     on_connectButton_clicked();
 }

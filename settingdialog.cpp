@@ -48,8 +48,8 @@ void settingDialog::on_applyButton_clicked() {
             return;
         }
         m_serial->setPortName(str.section("  ", 0, 0));
+        emit connect_button_pushed();
     }
-    emit connect_button_pushed();
     hide();
 }
 
