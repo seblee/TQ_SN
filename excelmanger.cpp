@@ -1,7 +1,11 @@
 #include "excelmanger.h"
+#include <QByteArray>
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonObject>
+//#include <QVariant>
 
 #define TC_FREE(x) \
     {              \
@@ -34,21 +38,47 @@ ExcelManger::ExcelManger(QWidget *parent)
     destory();
 }
 
-void ExcelManger::input_sid(QString SID) {
+void ExcelManger::input_sid(QString deviceName, QString productKey, QString deviceSecret) {
     QList<QVariant> var;
-    var.append(SID);
+    var.append(deviceName);
+    var.append(productKey);
+    var.append(deviceSecret);
     data.append(var);
     writeAll(data);
 }
 
-int ExcelManger::input_check(QString SID) {
+int ExcelManger::input_check(QString deviceName) {
     int row = data.size();
     for (int i = 0; i < row; i++) {
-        qDebug() << data.at(i).at(0).toString() + tr(":") + SID;
-        if (QString::compare(SID, data.at(i).at(0).toString(), Qt::CaseSensitive) == 0)
+        qDebug() << data.at(i).at(0).toString() + tr(":") + deviceName;
+        if (QString::compare(deviceName, data.at(i).at(0).toString(), Qt::CaseSensitive) == 0)
             return 0;
     }
     return 1;
+}
+
+void ExcelManger::output_sid(QString deviceName) {
+    int row = data.size();
+    for (int i = 0; i < row; i++) {
+        qDebug() << data.at(i).at(0).toString() + tr(":") + deviceName;
+        if (QString::compare(deviceName, data.at(i).at(0).toString(), Qt::CaseSensitive) == 0) {
+
+            QVariantHash root;
+            root.insert("code", 100);
+            QVariantHash sid_data;
+            sid_data.insert("deviceName", data.at(i).at(0).toString());
+            sid_data.insert("productKey", data.at(i).at(1).toString());
+            sid_data.insert("deviceSecret", data.at(i).at(2).toString());
+            root.insert("data", sid_data);
+            root.insert("message", "success");
+            QJsonObject rootObj = QJsonObject::fromVariantHash(root);
+            QJsonDocument json;
+            json.setObject(rootObj);
+            qDebug() << "json" << json.toJson();
+            emit json_back(json);
+            break;
+        }
+    }
 }
 
 bool ExcelManger::isFileExist(QString fullFileName) {

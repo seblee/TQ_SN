@@ -9,6 +9,7 @@ QT += serialport
 QT += gui
 QT += serialbus
 QT += axcontainer
+QT += network
 
 TARGET = TQ_SN
 TEMPLATE = app

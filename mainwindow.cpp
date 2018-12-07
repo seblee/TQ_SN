@@ -4,6 +4,7 @@
 #include "parse_data.h"
 #include "settingdialog.h"
 #include "ui_mainwindow.h"
+#include <QJsonDocument>
 #include <QMessageBox>
 #include <QModbusDataUnit>
 #include <QModbusReply>
@@ -41,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
         this, &MainWindow::handleError);
     ui->checkBox_ScanSwith->setEnabled(false);
     excel = new ExcelManger(this);
-    auto auth = new AuthRegist(tr("age"));
 }
 
 MainWindow::~MainWindow() {
@@ -114,8 +114,20 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 qDebug() << currKey;
                 ui->label_WriteState->setText(ui->lineEdit_writeDeviceName->text());
                 ui->lineEdit_writeDeviceName->clear();
+
+                if (excel->input_check(ui->label_WriteState->text()) == 0) {
+                    qDebug() << ui->label_WriteState->text() << tr("already written");
+                    disconnect(excel, &ExcelManger::json_back, nullptr, nullptr);
+                    connect(excel, &ExcelManger::json_back, this, &MainWindow::write_to_file);
+                    excel->output_sid(ui->label_WriteState->text());
+                } else {
+                    auto auth = new AuthRegist(ui->label_WriteState->text(), ui->comboBox_AirWater->currentText());
+                    connect(auth, &AuthRegist::register_back, this, &MainWindow::write_to_file);
+                    auth->start_request();
+                }
+
                 qDebug() << tr("enter");
-                on_writeButton_clicked();
+                //  on_writeButton_clicked();
                 currKey.clear();
                 K_timer->stop();
                 return;
@@ -129,6 +141,57 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         currKey = event->text();
         K_timer->start();
     }
+}
+
+void MainWindow::send_to_bord(QString deviceName, QString productKey, QString deviceSecret) {
+    if (!serial)
+        return;
+    if (serial->openMode() != QIODevice::ReadWrite)
+        return;
+    Parse_Data write_data;
+
+    QString checkStr;
+    checkStr = ui->comboBox_AirWater->currentText() + tr("-") +
+        ui->comboBox_Model->currentText() + tr("-");
+    qDebug() << checkStr;
+    qDebug() << ui->label_WriteState->text();
+    qDebug() << tr("x.lastIndexOf(y):")
+             << QString::number(deviceName.lastIndexOf(checkStr), 10);
+    if (deviceName.lastIndexOf(checkStr) != 0) {
+        return;
+    }
+
+    write_data.Parse_insert_flag(QString::number(REGISTER_FLAG, 16));
+    write_data.Parse_insert_deviceName(deviceName);
+    write_data.Parse_insert_productKey(productKey);
+    write_data.Parse_insert_deviceSecret(deviceSecret);
+    write_data.Parse_insert_clientID(deviceName);
+
+    QByteArray WriteCmd("");
+    WriteCmd.insert(WriteCmd.size(), 0x01);
+    WriteCmd.insert(WriteCmd.size(), 0x10);
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(264 >> 8));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(264 & 0x00ff));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 >> 8));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 & 0x00ff));
+    WriteCmd.insert(WriteCmd.size(), static_cast<char>(100 * 2));
+    WriteCmd.append(write_data.GetArray());
+
+    auto crc16ForModbus = JQChecksum::crc16ForModbus(WriteCmd);
+    qDebug() << "crc16ForModbus:" << crc16ForModbus << QString::number(crc16ForModbus, 16);
+    WriteCmd.insert(WriteCmd.length(), static_cast<char>(crc16ForModbus & 0xff));
+    WriteCmd.insert(WriteCmd.length(), static_cast<char>(crc16ForModbus >> 8));
+    QString stri(WriteCmd.toHex().toUpper());
+    int len = stri.length() / 2;
+    qDebug() << tr("QString count:") << QString::number(len, 10);
+    for (int i = 1; i < len; i++) {
+        stri.insert(2 * i + i - 1, " ");
+    }
+    qDebug() << stri;
+
+    serial->write(WriteCmd);
+    timer->start(1000);
+    ReceiveBuf.clear();
 }
 
 void MainWindow::Read_Data() {
@@ -353,9 +416,14 @@ void MainWindow::on_pushButton_clicked() {
 
     if (excel->input_check(ui->lineEdit_writeDeviceName->text()) == 0) {
         qDebug() << ui->lineEdit_writeDeviceName->text() << tr("already written");
-        return;
+        disconnect(excel, &ExcelManger::json_back, nullptr, nullptr);
+        connect(excel, &ExcelManger::json_back, this, &MainWindow::write_to_file);
+        excel->output_sid(ui->lineEdit_writeDeviceName->text());
+    } else {
+        auto auth = new AuthRegist(tr("register_device_test_04"), ui->comboBox_AirWater->currentText());
+        connect(auth, &AuthRegist::register_back, this, &MainWindow::write_to_file);
+        auth->start_request();
     }
-    excel->input_sid(ui->lineEdit_writeDeviceName->text());
 }
 
 void MainWindow::on_actionOptions_triggered() {
@@ -375,4 +443,41 @@ void MainWindow::on_actionDisconnect_triggered() {
         return;
     }
     on_connectButton_clicked();
+}
+
+void MainWindow::write_to_file(QJsonDocument data) {
+    if (data.isNull() || data.isEmpty())
+        return;
+    if (data.isObject()) {
+        QJsonObject object = data.object();
+
+        if (object.contains("code")) {
+            QJsonValue value = object.value("code");
+            qDebug() << tr("code:%1").arg(value.toVariant().toInt()) << object.value("message").toString();
+
+            if (value.isDouble()) {
+                if (value.toVariant().toInt() == 200) {
+                    QJsonObject dataOBJ = object.value("data").toObject();
+                    excel->input_sid(dataOBJ.value("deviceName").toString(),
+                        dataOBJ.value("productKey").toString(),
+                        dataOBJ.value("deviceSecret").toString());
+                    send_to_bord(dataOBJ.value("deviceName").toString(),
+                        dataOBJ.value("productKey").toString(),
+                        dataOBJ.value("deviceSecret").toString());
+                }
+                if (value.toVariant().toInt() == 100) {
+                    QJsonObject dataOBJ = object.value("data").toObject();
+
+                    send_to_bord(dataOBJ.value("deviceName").toString(),
+                        dataOBJ.value("productKey").toString(),
+                        dataOBJ.value("deviceSecret").toString());
+                } else {
+                    qDebug() << tr("code:%1").arg(value.toVariant().toInt()) << object.value("message").toString();
+                }
+            }
+        } else if (object.contains("error")) {
+            QJsonValue value = object.value("error");
+            qDebug() << value.toString();
+        }
+    }
 }

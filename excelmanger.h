@@ -9,11 +9,13 @@ class ExcelManger : public QMainWindow {
   public:
     explicit ExcelManger(QWidget *parent = nullptr);
 
-    void input_sid(QString SID);
+    void input_sid(QString deviceName, QString productKey, QString deviceSecret);
 
-    int input_check(QString SID);
+    int input_check(QString deviceName);
+
+    void output_sid(QString deviceName);
   signals:
-
+    void json_back(QJsonDocument &SID);
   public slots:
 
   private:

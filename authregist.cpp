@@ -1,5 +1,6 @@
 #include "authregist.h"
 #include <QDebug>
+#include <QJsonObject>
 #include <QTime>
 
 static const unsigned char iot_md5_padding[64] = {
@@ -9,52 +10,58 @@ static const unsigned char iot_md5_padding[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 AuthRegist::AuthRegist(QWidget *parent)
-    : QMainWindow(parent) {
+    : QMainWindow(parent)
+    , m_AccessManager(nullptr) {
 }
 
-AuthRegist::AuthRegist(QString SID) {
+AuthRegist::AuthRegist(QString deviceName, QString productModle) {
     int srandom;
-    SID = SID;
     QByteArray md5_scr;
+    const char *produce_secret;
     md5_scr.append("deviceName");
-    md5_scr.append(SID);
+    md5_scr.append(deviceName);
     md5_scr.append("productKey");
-    md5_scr.append(REGISTER_PRODUCT_KEY);
-    md5_scr.append("srandom");
+    if (productModle.lastIndexOf(tr("L28 ")) == 0) {
+        md5_scr.append(L60W_PRODUCT_KEY);
+        produce_secret = L60W_PRODUCT_SECRET;
+    } else if (productModle.lastIndexOf(tr("L50R")) == 0) {
+        md5_scr.append(L50R_PRODUCT_KEY);
+        produce_secret = L50R_PRODUCT_SECRET;
+    } else if (productModle.lastIndexOf(tr("L60W")) == 0) {
+        md5_scr.append(L60W_PRODUCT_KEY);
+        produce_secret = L60W_PRODUCT_SECRET;
+    } else {
+        md5_scr.append(L60W_PRODUCT_KEY);
+        produce_secret = L60W_PRODUCT_SECRET;
+    }
+    md5_scr.append("random");
     qsrand(static_cast<uint>(QTime(0, 0, 0).secsTo(QTime::currentTime())));
     srandom = qrand();
     md5_scr.append(QString::number(srandom, 10));
 
     QByteArray guider_sign;
     guider_sign = utils_hmac_md5(md5_scr.data(), md5_scr.length(),
-        REGISTER_PRODUCT_SECRET,
-        strlen(REGISTER_PRODUCT_SECRET));
-    qDebug() << QString::number(guider_sign.length(), 10)
-             << guider_sign;
-
-    QByteArray body;
+        produce_secret,
+        strlen(L50R_PRODUCT_SECRET));
 
     body.append(
         QString("productKey=%1&deviceName=%2&random=%3&sign=%4&signMethod=HmacMD5")
-            .arg(REGISTER_PRODUCT_KEY)
-            .arg(SID)
+            .arg(L60W_PRODUCT_SECRET)
+            .arg(deviceName)
             .arg(QString::number(srandom, 10))
             .arg(QString::fromLatin1(guider_sign)));
+}
 
-    qDebug() << tr("body")
-             << body;
-
-    request.clear();
-    request.append(QString("POST /auth/register/device HTTP/1.1\r\n"
-                           "Host: iot-auth.cn-shanghai.aliyuncs.com\r\n"
-                           "Content-Type: application/x-www-form-urlencoded\r\n"
-                           "Content-Length: %1\r\n"
-                           "\r\n"
-                           "%2")
-                       .arg(body.length())
-                       .arg(QString::fromLatin1(body)));
-    qDebug() << QString::number(request.length(), 10)
-             << request;
+void AuthRegist::handleTimeOut() {
+    timer.stop();
+    qDebug() << "time out";
+    QJsonObject jsonObj;
+    jsonObj.insert("error", "time out");
+    QJsonDocument json;
+    json.setObject(jsonObj);
+    emit register_back(json);
+    m_reply->abort();
+    m_reply->deleteLater();
 }
 
 QByteArray AuthRegist::utils_hmac_md5(const char *msg, int msg_len, const char *key, int key_len) {
@@ -103,12 +110,8 @@ QByteArray AuthRegist::utils_hmac_md5(const char *msg, int msg_len, const char *
     utils_md5_finish(&context, out);                    /* finish up 2nd pass */
 
     for (i = 0; i < MD5_DIGEST_SIZE; ++i) {
-        //  digest.append(utils_hb2hex(out[i] >> 4));
-        //  digest.append(utils_hb2hex(out[i]));
         digest.insert(i * 2, utils_hb2hex(out[i] >> 4));
         digest.insert(i * 2 + 1, utils_hb2hex(out[i]));
-        //   digest[i * 2] = utils_hb2hex(out[i] >> 4);
-        //   digest[i * 2 + 1] = utils_hb2hex(out[i]);
     }
     return digest;
 }
@@ -314,4 +317,48 @@ void AuthRegist::utils_md5_process(iot_md5_context *ctx, const unsigned char dat
 int8_t AuthRegist::utils_hb2hex(uint8_t hb) {
     hb = hb & 0xF;
     return static_cast<int8_t>(hb < 10 ? '0' + hb : hb - 10 + 'a');
+}
+
+void AuthRegist::ReplyReadFunc(QNetworkReply *reply) {
+    if (timer.isActive())
+        timer.stop();
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray response = reply->readAll();
+        qDebug() << response;
+        QJsonParseError jsonError;
+        QJsonDocument json = QJsonDocument::fromJson(response, &jsonError);
+        emit register_back(json);
+    } else {
+        qDebug() << tr("reply err:") + reply->errorString();
+    }
+    reply->deleteLater();
+}
+
+void AuthRegist::start_request() {
+    if (timer.isActive())
+        return;
+    if (body.length() == 0)
+        return;
+    QUrl url("https://iot-auth.cn-shanghai.aliyuncs.com/auth/register/device");
+    m_AccessManager = new QNetworkAccessManager(this);
+
+    QSslConfiguration config;
+    config.setPeerVerifyDepth(QSslSocket::VerifyNone);
+    config.setProtocol(QSsl::TlsV1_2);
+    m_Request.setSslConfiguration(config);
+    m_Request.setUrl(url);
+
+    m_Request.setRawHeader("Host", url.host().toLocal8Bit());
+    m_Request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    m_Request.setRawHeader("Content-Length", tr("%1").arg(body.length()).toLocal8Bit());
+
+    m_reply = m_AccessManager->post(m_Request, body);
+    connect(m_AccessManager, &QNetworkAccessManager::finished, this, &AuthRegist::ReplyReadFunc);
+
+    disconnect(&timer, &QTimer::timeout, nullptr, nullptr);
+    connect(&timer, &QTimer::timeout, this, &AuthRegist::handleTimeOut);
+
+    if (timer.isActive())
+        timer.stop();
+    timer.start(3000);
 }

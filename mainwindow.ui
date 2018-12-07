@@ -124,6 +124,11 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <string>L50R</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>L60W</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>
