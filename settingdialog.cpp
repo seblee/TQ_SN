@@ -14,8 +14,8 @@ settingDialog::settingDialog(QWidget *parent)
     ui->baudCombo->setCurrentText(QString::number(m_settings.baud));
     ui->dataBitsCombo->setCurrentText(QString::number(m_settings.dataBits));
     ui->stopBitsCombo->setCurrentText(QString::number(m_settings.stopBits));
-    //    ui->timeoutSpinner->setValue(m_settings.responseTime);
-    //    ui->retriesSpinner->setValue(m_settings.numberOfRetries);
+    ui->timeoutSpinner->setValue(m_settings.responseTime);
+    ui->retriesSpinner->setValue(m_settings.numberOfRetries);
 
     m_serial = new QSerialPort(this);
 }
@@ -39,8 +39,8 @@ void settingDialog::on_applyButton_clicked() {
     m_settings.baud = QSerialPort::BaudRate(ui->baudCombo->currentText().toInt());
     m_settings.dataBits = QSerialPort::DataBits(ui->dataBitsCombo->currentText().toInt());
     m_settings.stopBits = QSerialPort::StopBits(ui->stopBitsCombo->currentText().toInt());
-    //    m_settings.responseTime = ui->timeoutSpinner->value();
-    //    m_settings.numberOfRetries = ui->retriesSpinner->value();
+    m_settings.responseTime = ui->timeoutSpinner->value();
+    m_settings.numberOfRetries = ui->retriesSpinner->value();
 
     QString str = ui->Serial_item->currentText();
     if (m_serial->openMode() != QIODevice::ReadWrite) {

@@ -39,9 +39,12 @@ class MainWindow : public QMainWindow {
     void on_actionDisconnect_triggered();
     void write_to_file(QJsonDocument data);
 
+    void checkout_connect();
+
   private:
     Ui::MainWindow *ui;
     QTimer *timer;
+    QTimer *Connect_timer;
     QSerialPort *serial;
     QByteArray ReceiveBuf;
     void keyPressEvent(QKeyEvent *event);
@@ -50,6 +53,16 @@ class MainWindow : public QMainWindow {
     settingDialog *m_settingsDialog;
     ExcelManger *excel;
     void send_to_bord(QString deviceName, QString productKey, QString deviceSecret);
+
+    int Retries;
+
+    bool checkWrite;
+
+    QString readFlag;
+    QString device_name;
+    QString product_key;
+    QString device_secret;
+    QString device_id;
 };
 
 #endif // MAINWINDOW_H

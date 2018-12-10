@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     , K_timer(nullptr)
     , excel(nullptr) {
     ui->setupUi(this);
-
+    Retries = 0;
     timer = new QTimer(this);
     if (timer)
         connect(timer, SIGNAL(timeout()), this, SLOT(time_up()));
@@ -37,11 +37,23 @@ MainWindow::MainWindow(QWidget *parent)
     m_settingsDialog = new settingDialog(this);
     connect(m_settingsDialog, SIGNAL(connect_button_pushed()), this, SLOT(on_connectButton_clicked()));
     serial = m_settingsDialog->serial();
+
+    Retries = m_settingsDialog->settings().numberOfRetries;
+    Connect_timer = new QTimer(this);
+    if (Connect_timer) {
+        Connect_timer->setInterval(m_settingsDialog->settings().responseTime);
+        Connect_timer->setSingleShot(false);
+        connect(Connect_timer, &QTimer::timeout, this, &MainWindow::checkout_connect);
+        Connect_timer->start();
+    }
+
     //连接槽，串口出现问题连接到错误处理函数
     connect(serial, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error),
         this, &MainWindow::handleError);
     ui->checkBox_ScanSwith->setEnabled(false);
     excel = new ExcelManger(this);
+
+    checkWrite = false;
 }
 
 MainWindow::~MainWindow() {
@@ -148,6 +160,7 @@ void MainWindow::send_to_bord(QString deviceName, QString productKey, QString de
         return;
     if (serial->openMode() != QIODevice::ReadWrite)
         return;
+
     Parse_Data write_data;
 
     QString checkStr;
@@ -166,6 +179,18 @@ void MainWindow::send_to_bord(QString deviceName, QString productKey, QString de
     write_data.Parse_insert_productKey(productKey);
     write_data.Parse_insert_deviceSecret(deviceSecret);
     write_data.Parse_insert_clientID(deviceName);
+
+    readFlag.clear();
+    device_name.clear();
+    product_key.clear();
+    device_secret.clear();
+    device_id.clear();
+
+    readFlag.append(QString::number(REGISTER_FLAG, 16).toUpper());
+    device_name.append(deviceName);
+    product_key.append(productKey);
+    device_secret.append(deviceSecret);
+    device_id.append(deviceName);
 
     QByteArray WriteCmd("");
     WriteCmd.insert(WriteCmd.size(), 0x01);
@@ -192,6 +217,9 @@ void MainWindow::send_to_bord(QString deviceName, QString productKey, QString de
     serial->write(WriteCmd);
     timer->start(1000);
     ReceiveBuf.clear();
+    ui->OK_checkBox->setCheckState(Qt::Unchecked);
+    ui->OK_checkBox->setText(tr("正在写入"));
+    checkWrite = true;
 }
 
 void MainWindow::Read_Data() {
@@ -219,7 +247,6 @@ void MainWindow::on_connectButton_clicked() {
                 m_settingsDialog->settings().parity);
             serial->setStopBits(
                 m_settingsDialog->settings().stopBits);
-            // serial->setFlowControl(QSerialPort::NoFlowControl);
             QObject::connect(serial, &QSerialPort::readyRead, this,
                 &MainWindow::Read_Data);
             qDebug() << "open serial" << serial->portName() << "done";
@@ -227,6 +254,10 @@ void MainWindow::on_connectButton_clicked() {
             ui->actionDisconnect->setEnabled(true);
             ui->actiontest->setChecked(Qt::Checked);
             ui->checkBox_ScanSwith->setEnabled(true);
+            qDebug() << "open serial" << QString::number(m_settingsDialog->settings().responseTime, 10);
+
+            Connect_timer->setInterval(m_settingsDialog->settings().responseTime);
+            Connect_timer->setSingleShot(false);
         }
         statusBar()->showMessage(serial->portName().section("  ", 0, 0) + tr(" Connected"), 3000);
     } else {
@@ -246,6 +277,8 @@ void MainWindow::on_readButton_clicked() {
         return;
     if (serial->openMode() != QIODevice::ReadWrite)
         return;
+    // if (timer->isActive())
+    //     return;
 
     QByteArray ReadCmd("");
     ReadCmd.insert(ReadCmd.size(), 0x01);
@@ -321,9 +354,14 @@ void MainWindow::on_writeButton_clicked() {
 }
 
 void MainWindow::time_up() {
-    if (ReceiveBuf.isEmpty())
+    if (ReceiveBuf.isEmpty()) {
+        if (checkWrite) {
+            ui->OK_checkBox->setText(tr("写入超时"));
+            checkWrite = false;
+        }
         return;
-    qDebug() << tr("get data:") << ReceiveBuf.toHex().toUpper();
+    }
+    // qDebug() << tr("get data:") << ReceiveBuf.toHex().toUpper();
 
     if (JQChecksum::crc16ForModbus(ReceiveBuf) != 0) {
         statusBar()->showMessage(tr("checksum error"), 3000);
@@ -336,34 +374,84 @@ void MainWindow::time_up() {
     switch (ReceiveBuf.at(1)) {
         case QModbusPdu::ReadHoldingRegisters: //0x10
         {
+            Retries = 0;
             qDebug() << tr("data count:") << QString::number(static_cast<long>(static_cast<uchar>(ReceiveBuf.at(2))), 10);
             QByteArray data = ReceiveBuf.mid(3, static_cast<uchar>(ReceiveBuf.at(2)));
             QString stri(data.toHex().toUpper());
-            int len = stri.length() / 2;
-            qDebug() << tr("QString count:") << QString::number(len, 10);
-            for (int i = 1; i < len; i++) {
-                stri.insert(2 * i + i - 1, " ");
-            }
-            qDebug() << stri;
 
             Parse_Data P_data;
             P_data.Parse_Read(data);
+            if (ui->lineEdit_readFlag->text() != QString::number(P_data.info.flag, 16).toUpper())
+                ui->lineEdit_readFlag->setText(QString::number(P_data.info.flag, 16).toUpper());
 
-            ui->lineEdit_readFlag->setText(QString::number(P_data.info.flag, 16).toUpper());
-            ui->lineEdit_readDeviceName->setText(QString::fromLocal8Bit(
-                P_data.info.device_name, static_cast<int>(strlen(P_data.info.device_name))));
-            ui->lineEdit_readProductKey->setText(QString::fromLocal8Bit(
-                P_data.info.product_key, static_cast<int>(strlen(P_data.info.product_key))));
-            ui->lineEdit_readDeviceSecret->setText(QString::fromLocal8Bit(
-                P_data.info.device_secret, static_cast<int>(strlen(P_data.info.device_secret))));
-            ui->lineEdit_readClientID->setText(QString::fromLocal8Bit(
-                P_data.info.device_id, static_cast<int>(strlen(P_data.info.device_id))));
+            if (ui->lineEdit_readDeviceName->text() !=
+                QString::fromLocal8Bit(P_data.info.device_name, static_cast<int>(strlen(P_data.info.device_name))))
+                ui->lineEdit_readDeviceName->setText(
+                    QString::fromLocal8Bit(P_data.info.device_name, static_cast<int>(strlen(P_data.info.device_name))));
+
+            if (ui->lineEdit_readProductKey->text() !=
+                QString::fromLocal8Bit(P_data.info.product_key, static_cast<int>(strlen(P_data.info.product_key))))
+                ui->lineEdit_readProductKey->setText(
+                    QString::fromLocal8Bit(P_data.info.product_key, static_cast<int>(strlen(P_data.info.product_key))));
+
+            if (ui->lineEdit_readDeviceSecret->text() !=
+                QString::fromLocal8Bit(P_data.info.device_secret, static_cast<int>(strlen(P_data.info.device_secret))))
+                ui->lineEdit_readDeviceSecret->setText(
+                    QString::fromLocal8Bit(P_data.info.device_secret, static_cast<int>(strlen(P_data.info.device_secret))));
+
+            if (ui->lineEdit_readClientID->text() !=
+                QString::fromLocal8Bit(P_data.info.device_id, static_cast<int>(strlen(P_data.info.device_id))))
+                ui->lineEdit_readClientID->setText(
+                    QString::fromLocal8Bit(P_data.info.device_id, static_cast<int>(strlen(P_data.info.device_id))));
+
             statusBar()->showMessage(tr("read sucess"), 3000);
+
+            if (checkWrite) {
+                checkWrite = false;
+                qDebug() << tr("readFlag ") + readFlag + tr(":") + ui->lineEdit_readFlag->text();
+                qDebug() << tr("device_name ") + device_name + tr(":") + ui->lineEdit_readDeviceName->text();
+                qDebug() << tr("product_key ") + product_key + tr(":") + ui->lineEdit_readProductKey->text();
+                qDebug() << tr("device_secret ") + device_secret + tr(":") + ui->lineEdit_readDeviceSecret->text();
+                qDebug() << tr("device_id ") + device_id + tr(":") + ui->lineEdit_readClientID->text();
+
+                if (readFlag != ui->lineEdit_readFlag->text()) {
+                    ui->OK_checkBox->setCheckState(Qt::PartiallyChecked);
+                    ui->OK_checkBox->setText(tr("写入失败"));
+                    break;
+                }
+                if (device_name != ui->lineEdit_readDeviceName->text()) {
+                    ui->OK_checkBox->setCheckState(Qt::PartiallyChecked);
+                    ui->OK_checkBox->setText(tr("写入失败"));
+                    break;
+                }
+                if (product_key != ui->lineEdit_readProductKey->text()) {
+                    ui->OK_checkBox->setCheckState(Qt::PartiallyChecked);
+                    ui->OK_checkBox->setText(tr("写入失败"));
+                    break;
+                }
+                if (device_secret != ui->lineEdit_readDeviceSecret->text()) {
+                    ui->OK_checkBox->setCheckState(Qt::PartiallyChecked);
+                    ui->OK_checkBox->setText(tr("写入失败"));
+                    break;
+                }
+                if (device_id != ui->lineEdit_readClientID->text()) {
+                    ui->OK_checkBox->setCheckState(Qt::PartiallyChecked);
+                    ui->OK_checkBox->setText(tr("写入失败"));
+                    break;
+                }
+                ui->OK_checkBox->setCheckState(Qt::Checked);
+                ui->OK_checkBox->setText(tr("写入成功"));
+            }
+
             break;
         }
 
         case QModbusPdu::WriteMultipleRegisters: {
+            Retries = 0;
             statusBar()->showMessage(tr("write sucess"), 3000);
+
+            ui->OK_checkBox->setCheckState(Qt::Unchecked);
+            ui->OK_checkBox->setText(tr("正在读取"));
             break;
         }
         default:
@@ -381,6 +469,7 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
         ui->lineEdit_writeProductKey->setReadOnly(true);
         ui->lineEdit_writeDeviceSecret->setReadOnly(true);
         ui->lineEdit_writeClientID->setReadOnly(true);
+
         ui->lineEdit_writeDeviceName->clear();
         ui->lineEdit_writeProductKey->clear();
         ui->lineEdit_writeDeviceSecret->clear();
@@ -397,10 +486,11 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
         ui->lineEdit_writeProductKey->setReadOnly(false);
         ui->lineEdit_writeDeviceSecret->setReadOnly(false);
         ui->lineEdit_writeClientID->setReadOnly(false);
+
         ui->comboBox_Model->setEnabled(true);
         ui->readButton->setEnabled(true);
         ui->writeButton->setEnabled(true);
-        ui->actionConnect->setEnabled(true);
+        // ui->actionConnect->setEnabled(true);
         ui->actionDisconnect->setEnabled(true);
         ui->actionOptions->setEnabled(true);
         ui->lineEdit_writeDeviceName->releaseKeyboard();
@@ -480,4 +570,14 @@ void MainWindow::write_to_file(QJsonDocument data) {
             qDebug() << value.toString();
         }
     }
+}
+
+void MainWindow::checkout_connect() {
+    Retries++;
+    if (Retries <= m_settingsDialog->settings().numberOfRetries) {
+        ui->actionDeviceOnline->setChecked(Qt::Checked);
+    } else {
+        ui->actionDeviceOnline->setChecked(Qt::Unchecked);
+    }
+    on_readButton_clicked();
 }
