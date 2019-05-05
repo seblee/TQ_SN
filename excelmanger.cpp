@@ -22,7 +22,7 @@ ExcelManger::ExcelManger(QWidget *parent)
     , worksheet(nullptr) {
     filepath = QDir::currentPath();
 
-    filepath += tr("/log/record.xlsx");
+    filepath += tr("/record/record.xlsx");
     qDebug() << filepath;
     if (!isFileExist(filepath)) {
         qDebug() << tr("creat new file");
@@ -50,7 +50,7 @@ void ExcelManger::input_sid(QString deviceName, QString productKey, QString devi
 int ExcelManger::input_check(QString deviceName) {
     int row = data.size();
     for (int i = 0; i < row; i++) {
-        qDebug() << data.at(i).at(0).toString() + tr(":") + deviceName;
+        //        qDebug() << data.at(i).at(0).toString() + tr(":") + deviceName;
         if (QString::compare(deviceName, data.at(i).at(0).toString(), Qt::CaseSensitive) == 0)
             return 0;
     }

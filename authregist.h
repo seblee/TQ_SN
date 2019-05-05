@@ -7,13 +7,24 @@
 #include <QNetworkReply>
 #include <QTimer>
 
+//#define REGISTER_PRODUCT_KEY "rl0bGtKFCYA"
+//#define REGISTER_PRODUCT_SECRET "GSR7xdLGIN3takCN"
+
+//#define L60W_PRODUCT_KEY REGISTER_PRODUCT_KEY
+//#define L60W_PRODUCT_SECRET REGISTER_PRODUCT_SECRET
+
 #define L60W_PRODUCT_KEY "a1JOOi3mNEf"
 #define L60W_PRODUCT_SECRET "BQjNWOG8EJWa4nFu"
 
-#define L50R_PRODUCT_KEY "a1Ad6nE1L4J"
-#define L50R_PRODUCT_SECRET "GSR7xdLGIN3takCN"
-//#define REGISTER_PRODUCT_KEY "rl0bGtKFCYA"
-//#define REGISTER_PRODUCT_SECRET "GSR7xdLGIN3takCN"
+#define L280_PRODUCT_KEY L60W_PRODUCT_KEY
+#define L280_PRODUCT_SECRET L60W_PRODUCT_SECRET
+
+#define L50R_PRODUCT_KEY L60W_PRODUCT_KEY
+#define L50R_PRODUCT_SECRET L60W_PRODUCT_SECRET
+
+
+#define Modbus_READ_ADD 399
+#define Modbus_WRITE_ADD 399
 
 #define KEY_IOPAD_SIZE 64
 #define MD5_DIGEST_SIZE 16
@@ -61,7 +72,7 @@ class AuthRegist : public QMainWindow {
     QString SID;
     QByteArray body;
 
-    QByteArray utils_hmac_md5(const char *msg, int msg_len, const char *key, int key_len);
+    QByteArray utils_hmac_md5(const char *msg, int msg_len, const char *key, unsigned int key_len);
     void utils_md5_init(iot_md5_context *ctx);
     void utils_md5_starts(iot_md5_context *ctx);
     void utils_md5_update(iot_md5_context *ctx, const unsigned char *input, size_t ilen);

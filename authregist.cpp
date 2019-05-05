@@ -1,6 +1,7 @@
 #include "authregist.h"
 #include <QDebug>
 #include <QJsonObject>
+#include <QMessageBox>
 #include <QTime>
 
 static const unsigned char iot_md5_padding[64] = {
@@ -17,21 +18,26 @@ AuthRegist::AuthRegist(QWidget *parent)
 AuthRegist::AuthRegist(QString deviceName, QString productModle) {
     int srandom;
     QByteArray md5_scr;
+    const char *produce_key;
     const char *produce_secret;
     md5_scr.append("deviceName");
     md5_scr.append(deviceName);
     md5_scr.append("productKey");
     if (productModle.lastIndexOf(tr("L28 ")) == 0) {
-        md5_scr.append(L60W_PRODUCT_KEY);
-        produce_secret = L60W_PRODUCT_SECRET;
+        md5_scr.append(L280_PRODUCT_KEY);
+        produce_key = L280_PRODUCT_KEY;
+        produce_secret = L280_PRODUCT_SECRET;
     } else if (productModle.lastIndexOf(tr("L50R")) == 0) {
         md5_scr.append(L50R_PRODUCT_KEY);
+        produce_key = L50R_PRODUCT_KEY;
         produce_secret = L50R_PRODUCT_SECRET;
     } else if (productModle.lastIndexOf(tr("L60W")) == 0) {
         md5_scr.append(L60W_PRODUCT_KEY);
+        produce_key = L60W_PRODUCT_KEY;
         produce_secret = L60W_PRODUCT_SECRET;
     } else {
         md5_scr.append(L60W_PRODUCT_KEY);
+        produce_key = L60W_PRODUCT_KEY;
         produce_secret = L60W_PRODUCT_SECRET;
     }
     md5_scr.append("random");
@@ -42,14 +48,15 @@ AuthRegist::AuthRegist(QString deviceName, QString productModle) {
     QByteArray guider_sign;
     guider_sign = utils_hmac_md5(md5_scr.data(), md5_scr.length(),
         produce_secret,
-        strlen(L50R_PRODUCT_SECRET));
+        strlen(produce_secret));
 
     body.append(
         QString("productKey=%1&deviceName=%2&random=%3&sign=%4&signMethod=HmacMD5")
-            .arg(L60W_PRODUCT_SECRET)
+            .arg(produce_key)
             .arg(deviceName)
             .arg(QString::number(srandom, 10))
             .arg(QString::fromLatin1(guider_sign)));
+    qDebug() << body;
 }
 
 void AuthRegist::handleTimeOut() {
@@ -64,7 +71,7 @@ void AuthRegist::handleTimeOut() {
     m_reply->deleteLater();
 }
 
-QByteArray AuthRegist::utils_hmac_md5(const char *msg, int msg_len, const char *key, int key_len) {
+QByteArray AuthRegist::utils_hmac_md5(const char *msg, int msg_len, const char *key, unsigned int key_len) {
     QByteArray digest;
     if ((nullptr == msg) || (nullptr == key)) {
         // log_err("parameter is Null,failed!");
@@ -329,7 +336,17 @@ void AuthRegist::ReplyReadFunc(QNetworkReply *reply) {
         QJsonDocument json = QJsonDocument::fromJson(response, &jsonError);
         emit register_back(json);
     } else {
-        qDebug() << tr("reply err:") + reply->errorString();
+        QJsonObject jsonObj;
+        jsonObj.insert("error", reply->errorString());
+        QJsonDocument json;
+        json.setObject(jsonObj);
+        emit register_back(json);
+        QMessageBox::critical(
+            this, tr("reply err"),
+            tr("reply err:") + reply->errorString());
+
+        qDebug()
+            << tr("reply err:") + reply->errorString();
     }
     reply->deleteLater();
 }
@@ -360,5 +377,5 @@ void AuthRegist::start_request() {
 
     if (timer.isActive())
         timer.stop();
-    timer.start(3000);
+    timer.start(5000);
 }

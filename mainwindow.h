@@ -26,7 +26,7 @@ class MainWindow : public QMainWindow {
 
   private slots:
     void handleError(QSerialPort::SerialPortError error);
-    void on_connectButton_clicked();
+    void connectButton_clicked();
     void onStateChanged(int states);
     void on_readButton_clicked();
     void on_writeButton_clicked();
@@ -57,6 +57,7 @@ class MainWindow : public QMainWindow {
     int Retries;
 
     bool checkWrite;
+    bool needtowrite;
 
     QString readFlag;
     QString device_name;

@@ -47,3 +47,6 @@ CMakeLists.txt.user*
 Release*
 
 release/
+TQ_SN/
+
+.vscode/

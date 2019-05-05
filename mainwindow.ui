@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1099</width>
-    <height>666</height>
+    <width>1058</width>
+    <height>700</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>TQ_SN</string>
@@ -20,6 +26,12 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="font">
        <font>
         <family>Arial</family>
@@ -31,7 +43,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>扫码界面</string>
+        <string>扫码设置</string>
        </attribute>
        <widget class="QCheckBox" name="checkBox_ScanSwith">
         <property name="geometry">
@@ -116,7 +128,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            </property>
            <item>
             <property name="text">
-             <string>L28 </string>
+             <string>L28-</string>
             </property>
            </item>
            <item>
@@ -175,219 +187,244 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>详细设置界面</string>
+        <string>手动设置</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QPushButton" name="writeButton">
-              <property name="font">
-               <font>
-                <family>Arial</family>
-                <pointsize>16</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>写入设备信息</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::StrongFocus</enum>
-              </property>
-              <property name="text">
-               <string>DeviceName</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEdit_writeDeviceName">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>cdtest004</string>
-              </property>
-              <property name="maxLength">
-               <number>32</number>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::StrongFocus</enum>
-              </property>
-              <property name="text">
-               <string>ProductKey</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_writeProductKey">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>a1JOOi3mNEf</string>
-              </property>
-              <property name="maxLength">
-               <number>20</number>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::StrongFocus</enum>
-              </property>
-              <property name="text">
-               <string>DeviceSecret</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_writeDeviceSecret">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>360</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>WjzDAlsux7gBMfF31M9CSZ9LKmutISPe</string>
-              </property>
-              <property name="maxLength">
-               <number>64</number>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::StrongFocus</enum>
-              </property>
-              <property name="text">
-               <string>ClientID</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="lineEdit_writeClientID">
-              <property name="font">
-               <font>
-                <family>Source Code Pro</family>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>cdtest0041</string>
-              </property>
-              <property name="maxLength">
-               <number>64</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QLabel" name="label_6">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>6</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                 </property>
+                 <property name="text">
+                  <string>DeviceName</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit_writeDeviceName">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="maxLength">
+                  <number>32</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                 </property>
+                 <property name="text">
+                  <string>ProductKey</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_writeProductKey">
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="maxLength">
+                  <number>20</number>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_3">
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                 </property>
+                 <property name="text">
+                  <string>DeviceSecret</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="lineEdit_writeDeviceSecret">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>340</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Source Code Pro</family>
+                   <pointsize>14</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="maxLength">
+                  <number>64</number>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>16</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="writeButton">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>  写入SID  </string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>PushButton</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -395,6 +432,12 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="font">
        <font>
         <family>Arial</family>
@@ -407,6 +450,19 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <layout class="QGridLayout" name="gridLayout">
+         <item row="7" column="1">
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_13">
            <property name="font">
@@ -504,7 +560,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
           <widget class="QLineEdit" name="lineEdit_readDeviceSecret">
            <property name="minimumSize">
             <size>
-             <width>0</width>
+             <width>340</width>
              <height>0</height>
             </size>
            </property>
@@ -519,6 +575,9 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
              <family>Source Code Pro</family>
              <pointsize>14</pointsize>
             </font>
+           </property>
+           <property name="text">
+            <string/>
            </property>
            <property name="maxLength">
             <number>64</number>
@@ -543,6 +602,19 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
             <string>读取设备信息</string>
            </property>
           </widget>
+         </item>
+         <item row="10" column="1">
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_12">
@@ -591,7 +663,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="11" column="1">
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -664,7 +736,7 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="8" column="1">
           <widget class="QCheckBox" name="OK_checkBox">
            <property name="enabled">
             <bool>false</bool>
@@ -690,7 +762,7 @@ QCheckBox::indicator:indeterminate {image: url(:/image/no.ico);} </string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="8" column="0">
           <widget class="QLabel" name="label_5">
            <property name="font">
             <font>
@@ -702,6 +774,19 @@ QCheckBox::indicator:indeterminate {image: url(:/image/no.ico);} </string>
             <string>写入状态</string>
            </property>
           </widget>
+         </item>
+         <item row="9" column="1">
+          <spacer name="verticalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -715,7 +800,7 @@ QCheckBox::indicator:indeterminate {image: url(:/image/no.ico);} </string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1099</width>
+     <width>1058</width>
      <height>22</height>
     </rect>
    </property>
@@ -738,6 +823,12 @@ QCheckBox::indicator:indeterminate {image: url(:/image/no.ico);} </string>
    <addaction name="menuTool"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
    <property name="sizeGripEnabled">
     <bool>false</bool>
    </property>
