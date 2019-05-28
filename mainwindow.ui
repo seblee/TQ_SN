@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>TQ_SN</string>
+   <string>TQ_SN V1.01</string>
   </property>
   <property name="styleSheet">
    <string notr="true">color: rgb(84, 0, 126);</string>
@@ -120,6 +120,9 @@ QCheckBox::indicator:unchecked {image: url(:/image/checkbox_unchecked.png);} </s
          </item>
          <item>
           <widget class="QComboBox" name="comboBox_Model">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <family>Arial</family>

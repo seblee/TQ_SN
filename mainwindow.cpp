@@ -137,7 +137,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 qDebug() << ui->label_WriteState->text();
                 qDebug() << tr("x.lastIndexOf(y):")
                          << QString::number(ui->label_WriteState->text().lastIndexOf(checkStr), 10);
-                if (ui->label_WriteState->text().lastIndexOf(checkStr) == 0) {
+                if (ui->label_WriteState->text().size()>0/* ui->label_WriteState->text().lastIndexOf(checkStr) == 0*/) {
                     ui->OK_checkBox->setCheckState(Qt::Unchecked);
                     ui->OK_checkBox->setText(tr(""));
 
@@ -186,7 +186,7 @@ void MainWindow::send_to_bord(QString deviceName, QString productKey, QString de
     qDebug() << ui->label_WriteState->text();
     qDebug() << tr("x.lastIndexOf(y):")
              << QString::number(deviceName.lastIndexOf(checkStr), 10);
-    if (deviceName.lastIndexOf(checkStr) != 0) {
+    if (deviceName.size()==0/* deviceName.lastIndexOf(checkStr) != 0*/) {
         return;
     }
 
@@ -328,7 +328,7 @@ void MainWindow::on_writeButton_clicked() {
     qDebug() << ui->lineEdit_writeDeviceName->text();
     qDebug() << tr("x.lastIndexOf(y):")
              << QString::number(ui->lineEdit_writeDeviceName->text().lastIndexOf(checkStr), 10);
-    if (ui->lineEdit_writeDeviceName->text().lastIndexOf(checkStr) == 0) {
+    if (ui->lineEdit_writeDeviceName->text().size() > 0/*ui->lineEdit_writeDeviceName->text().lastIndexOf(checkStr) == 0*/) {
         ui->OK_checkBox->setCheckState(Qt::Unchecked);
         ui->OK_checkBox->setText(tr(""));
         if (excel->input_check(ui->lineEdit_writeDeviceName->text()) == 0) {
@@ -343,7 +343,7 @@ void MainWindow::on_writeButton_clicked() {
             auth->start_request();
         }
     } else {
-        statusBar()->showMessage(tr("序列号错误"), 3000);
+        statusBar()->showMessage(tr("序列号错误/为空"), 3000);
     }
 }
 
