@@ -47,6 +47,7 @@ class MainWindow : public QMainWindow {
     QTimer *Connect_timer;
     QSerialPort *serial;
     QByteArray ReceiveBuf;
+    QString strCache;
     void keyPressEvent(QKeyEvent *event);
     QTimer *K_timer;
     settingDialog *m_settingsDialog;

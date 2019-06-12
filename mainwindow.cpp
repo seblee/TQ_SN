@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     K_timer = new QTimer(this);
     if (K_timer) {
-        K_timer->setInterval(10);
+        K_timer->setInterval(50);
         K_timer->setSingleShot(true);
         connect(K_timer, SIGNAL(timeout()), this, SLOT(key_time_out()));
     }
@@ -114,7 +114,6 @@ void MainWindow::onStateChanged(int state) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    static QString strCache;
     if (event->key() == Qt::Key_Escape) {
         if (serial) {
             if (serial->openMode() == QIODevice::ReadWrite) {
@@ -481,6 +480,7 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
 }
 
 void MainWindow::key_time_out() {
+    strCache.clear();
     ui->lineEdit_writeDeviceName->clear();
 }
 
