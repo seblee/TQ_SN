@@ -49,7 +49,6 @@ class MainWindow : public QMainWindow {
     QByteArray ReceiveBuf;
     void keyPressEvent(QKeyEvent *event);
     QTimer *K_timer;
-    QString currKey;
     settingDialog *m_settingsDialog;
     ExcelManger *excel;
     void send_to_bord(QString deviceName, QString productKey, QString deviceSecret);

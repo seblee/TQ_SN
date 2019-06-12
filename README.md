@@ -1,11 +1,12 @@
-# eland_com
+# TQ_SID
 # designed with QT
 
-# V1.04
+## V1.02
+- # ***修改扫描接收数据方式***
+
+
+## V1.01
 - # ***release out put:***
-   **eland_com**.exe
+   **TQ_SID**.exe
 
-- #  ***additional files(.dll):***
-  **additional**.zip
 
-![image](https://user-images.githubusercontent.com/28698690/34398695-e224d59c-ebbb-11e7-99b4-7ac735b1e0ee.png)

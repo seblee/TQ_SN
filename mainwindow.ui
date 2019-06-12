@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>TQ_SN V1.01</string>
+   <string>TQ_SN V1.02</string>
   </property>
   <property name="styleSheet">
    <string notr="true">color: rgb(84, 0, 126);</string>

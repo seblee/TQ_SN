@@ -18,12 +18,15 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , timer(nullptr)
+    , Connect_timer(nullptr)
     , serial(nullptr)
     , K_timer(nullptr)
+    , m_settingsDialog(nullptr)
     , excel(nullptr) {
     ui->setupUi(this);
     Retries = 0;
     timer = new QTimer(this);
+    Connect_timer = new QTimer(this);
     if (timer) {
         connect(timer, SIGNAL(timeout()), this, SLOT(time_up()));
         Connect_timer->setSingleShot(true);
@@ -42,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     serial = m_settingsDialog->serial();
 
     Retries = m_settingsDialog->settings().numberOfRetries;
-    Connect_timer = new QTimer(this);
+
     if (Connect_timer) {
         Connect_timer->setInterval(m_settingsDialog->settings().responseTime);
         Connect_timer->setSingleShot(false);
@@ -126,8 +129,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             return;
         if (K_timer->isActive()) { //scan code event
             if (event->key() == Qt::Key_Return) {
-
-                strCache.append(currKey);
                 ui->label_WriteState->setText(strCache);
                 strCache.clear();
 
@@ -158,15 +159,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
                 qDebug() << tr("enter");
 
-                currKey.clear();
                 K_timer->stop();
                 return;
 
             } else {
-                strCache.append(currKey);
+                strCache.append(event->text());
             }
+        }else {
+            strCache.clear();
+            strCache.append(event->text());
         }
-        currKey = event->text();
         K_timer->start();
     }
 }
@@ -479,7 +481,6 @@ void MainWindow::on_checkBox_ScanSwith_stateChanged(int arg1) {
 }
 
 void MainWindow::key_time_out() {
-    qDebug() << currKey;
     ui->lineEdit_writeDeviceName->clear();
 }
 
